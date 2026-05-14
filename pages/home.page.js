@@ -1,0 +1,108 @@
+import { expect } from "@playwright/test";
+import { BasePage } from "./base.page";
+import { navigateViaDropdown } from "../helpers";
+import { pageRoutes } from "../testData/constants";
+
+export default class HomePage extends BasePage {
+  constructor(page) {
+    super(page);
+
+    this.ptj_link_on_homepage = page.locator(
+      "a:has-text('Find Part time Job (PTJ)')",
+    );
+    this.logo = page.locator("//div[@class='logo']");
+    this.part_time_jobs_tab = page.locator(
+      "//li/a[contains(text(),'Part-Time Jobs')]",
+    );
+    this.part_time_jobs_dropdown = this.part_time_jobs_tab.locator(
+      "//following-sibling::div",
+    );
+    this.pbp_link_in_dropdown = this.part_time_jobs_dropdown.locator(
+      "//a[contains(text(),'PBP')]",
+    );
+    this.ptj_link_in_dropdown = this.part_time_jobs_dropdown.locator(
+      "//a[contains(text(),'PTJ')]",
+    );
+    this.find_expert_tab = page.locator(
+      "//li/a[contains(text(),'Find Experts')]",
+    );
+    this.find_expert_dropdown = this.find_expert_tab.locator(
+      "//following-sibling::div",
+    );
+    this.create_a_post_in_dropdown =
+      this.find_expert_dropdown.locator("//button");
+    this.select_service_type_popup = page.locator(
+      "//h2[contains(text(),'Select a service type')]",
+    );
+    this.pbp_option_in_service_type = page.getByRole("button", {
+      name: "Post & Browse Projects (PBP)",
+    });
+
+    this.profile_dropdown = page.getByRole("button", { name: "preview" });
+    this.profile_options = page.locator(
+      "//div[contains(@class,'mobile-menu-header')]",
+    );
+    this.dashboard_button = page.locator("//a[contains(text(),'Dashboard')]");
+  }
+
+  async navigateToPartTimeJobsFromHomepage() {
+    await this.ptj_link_on_homepage.click();
+  }
+
+  async navigateToPBPFromHomepage() {
+    await this.pbp_link_on_homepage.click();
+  }
+
+  async gotoHomepage() {
+    await this.logo.click();
+  }
+
+  async navigateToPBPViaDropdown() {
+    await this.part_time_jobs_tab.hover();
+    await expect(this.part_time_jobs_dropdown).toBeVisible();
+    await expect(this.pbp_link_in_dropdown).toBeVisible();
+    await this.pbp_link_in_dropdown.click();
+  }
+
+  async gotoPTJViaCard() {
+    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
+    await this.ptj_link_on_homepage.click();
+    await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=3");
+    await this.page.waitForLoadState("networkidle");
+  }
+
+  async goToPTJViaHeader() {
+    await navigateViaDropdown(
+      this.page,
+      "Part-Time Jobs",
+      "Browse Part-Time Jobs (PTJ)",
+    );
+    await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=3");
+    await this.page.waitForLoadState("networkidle");
+  }
+  async goToPTJViaDashboard() {
+    const profile_dropdown = this.page.getByRole("button", { name: "preview" });
+    await profile_dropdown.hover();
+    const dashboard_button = this.page.locator(
+      "//a[contains(text(),'Dashboard')]",
+    );
+    await dashboard_button.click();
+  }
+
+  async navigateToCreateAPBPPostViaDropdown() {
+    await this.find_expert_tab.hover();
+    await expect(this.find_expert_dropdown).toBeVisible();
+    await expect(this.create_a_post_in_dropdown).toBeVisible();
+    await this.create_a_post_in_dropdown.click();
+    await expect(this.select_service_type_popup).toBeVisible();
+    await this.pbp_option_in_service_type.click();
+  }
+
+  async gotoDashboardPage() {
+    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
+    await this.page.waitForLoadState("networkidle");
+    await this.profile_dropdown.click();
+    await expect(this.dashboard_button).toBeVisible();
+    await this.dashboard_button.click();
+  }
+}

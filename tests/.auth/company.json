@@ -1,0 +1,55 @@
+{
+  "cookies": [
+    {
+      "name": "refresh_token",
+      "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3ODEzNDkyOTYsImRhdGEiOnsiaWQiOjExMTUsInJvbGVfdHlwZSI6NCwiaXAiOiI0OS40My4yNS4yNTMiLCJ1c2VyX2FnZW50IjoiTW96aWxsYVwvNS4wIChXaW5kb3dzIE5UIDEwLjA7IFdpbjY0OyB4NjQpIEFwcGxlV2ViS2l0XC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBIZWFkbGVzc0Nocm9tZVwvMTQ3LjAuNzcyNy4xNSBTYWZhcmlcLzUzNy4zNiIsImNyZWF0ZWRfb24iOiIyMDI2LTA1LTE0IDExOjE0OjU2IiwicmVmcmVzaCI6MSwicmVkaXNfdG9rZW4iOiI3Zjk4N2IzNDU3MjczOTg5Zjg4ZmRmNTljNGRlNzc4OSJ9fQ.t_obCl5Z2CO4RcXbhRIyGIBE53XXtOxTndd1LwK4NNE",
+      "domain": ".urxprt.com",
+      "path": "/web/v0_3/routes/auth/refresh-token",
+      "expires": 1781349296.674675,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "i18next",
+      "value": "en",
+      "domain": "urxprt.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Strict"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://urxprt.com",
+      "localStorage": [
+        {
+          "name": "i18nextLng",
+          "value": "en"
+        },
+        {
+          "name": "laung",
+          "value": "en"
+        },
+        {
+          "name": "role_type",
+          "value": "4"
+        },
+        {
+          "name": "urlState",
+          "value": "eyJtYW5hZ2V3b3JrcHJvamV0cm91dGUiOiIiLCJtYW5hZ2V3b3Jram9icm91dGUiOiIiLCJtYW5hZ2V3b3JrY29udGVzdHJvdXRlIjoiIiwibXlvcmRlcnJvdXRlIjoiIiwicmVjZWl2ZWRvcmRlcnJvdXRlIjoiIiwicmVjZWl2ZWRvcmRlcnJvdXRlcmVxdWVzdCI6IiIsInJlY2VpdmVkb3JkZXJyb3V0ZWFjdGl2ZSI6IiIsIm15b3JkZXJQb3N0ZWRvcmRlcnNyb3V0ZSI6IiIsIm15b3JkZXJQdXJjaGFzZWRvcmRlcnNyb3V0ZSI6IiIsIm15b3JkZXJDb21wbGV0ZWRyb3V0ZSI6IiIsIm15b3JkZXJyZWNlbnRwcm9qZWN0cm91dGUiOiIiLCJteW9yZGVyYWN0aXZlcHJvamVjdHJvdXRlIjoiIiwibXlhbGxwcm9qZWN0bGlzdHJvdXRlIjoiIiwibXlhbGxjb25zdGVzdGxpc3Ryb3V0ZSI6IiIsIm15YWxsam9ibGlzdHJvdXRlIjoiIiwibWFuYWdlYXBwbGllZHByb2plY3Ryb3V0ZSI6IiIsIm1hbmFnZWFjdGl2ZWNvbnRlc3Ryb3V0ZSI6IiIsIm15b3JkZXJyZWNlbnRqb2Jzcm91dGUiOiIiLCJteW9yZGVyYWN0aXZlam9ic3JvdXRlIjoiIiwibWFuYWdlYXBwbGllZGpvYnJvdXRlIjoiIiwidGVhbXJvdXRlIjoiIiwidGVhbW1lbWJlciI6IiIsIm15b3RzIjoiIiwibXlvdHNBdXRvT3BlbiI6ZmFsc2UsImNhbmRlcnJvdXRlIjoiIn0="
+        },
+        {
+          "name": "urexperttoken",
+          "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3ODEzNDkyOTYsImRhdGEiOnsiaWQiOjExMTUsInJvbGVfdHlwZSI6NCwiaXAiOiI0OS40My4yNS4yNTMiLCJ1c2VyX2FnZW50IjoiTW96aWxsYVwvNS4wIChXaW5kb3dzIE5UIDEwLjA7IFdpbjY0OyB4NjQpIEFwcGxlV2ViS2l0XC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBIZWFkbGVzc0Nocm9tZVwvMTQ3LjAuNzcyNy4xNSBTYWZhcmlcLzUzNy4zNiIsImNyZWF0ZWRfb24iOiIyMDI2LTA1LTE0IDExOjE0OjU2IiwicmVmcmVzaCI6MCwicmVkaXNfdG9rZW4iOiI3Zjk4N2IzNDU3MjczOTg5Zjg4ZmRmNTljNGRlNzc4OSJ9fQ.YaPkYk2rrMYPY1WaqbscY5r3_OFj-Kb5GsDWyJVf4Kk"
+        },
+        {
+          "name": "refresh_token",
+          "value": "1"
+        }
+      ]
+    }
+  ]
+}
