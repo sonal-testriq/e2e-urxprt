@@ -1,6 +1,5 @@
 import { expect } from "@playwright/test";
 import { BasePage } from "./base.page";
-import { navigateViaDropdown } from "../helpers";
 import { pageRoutes } from "../testData/constants";
 
 export default class HomePage extends BasePage {
@@ -10,6 +9,9 @@ export default class HomePage extends BasePage {
     this.ptj_link_on_homepage = page.locator(
       "a:has-text('Find Part time Job (PTJ)')",
     );
+    this.pbp_link_on_homepage = page
+      .locator(".welcomepage")
+      .locator("a:has-text('Find Post & Browse Projects (PBP)')");
     this.logo = page.locator("//div[@class='logo']");
     this.part_time_jobs_tab = page.locator(
       "//li/a[contains(text(),'Part-Time Jobs')]",
@@ -71,13 +73,28 @@ export default class HomePage extends BasePage {
     await this.page.waitForLoadState("networkidle");
   }
 
+  async gotoPBPViaCard() {
+    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
+    await this.pbp_link_on_homepage.click(); // Assuming same link or adjust
+    await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=1"); // Assuming PBP type=1
+    await this.page.waitForLoadState("networkidle");
+  }
+
   async goToPTJViaHeader() {
-    await navigateViaDropdown(
-      this.page,
+    await this.navigateViaDropdown(
       "Part-Time Jobs",
       "Browse Part-Time Jobs (PTJ)",
     );
     await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=3");
+    await this.page.waitForLoadState("networkidle");
+  }
+
+  async goToPBPViaHeader() {
+    await this.navigateViaDropdown(
+      "Part-Time Jobs", // Assuming the menu
+      "Find Post & Browse Projects (PBP)", // Assuming the item
+    );
+    await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=1");
     await this.page.waitForLoadState("networkidle");
   }
   async goToPTJViaDashboard() {

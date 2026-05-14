@@ -2,15 +2,6 @@ import { test, expect } from "../../fixtures/page.fixture.js";
 import PTJPage from "../../pages/part-time-job.page";
 import { assert } from "node:console";
 import { only } from "node:test";
-import {
-  selectDropdown,
-  selectRadioOption,
-  fillInput,
-  fillRichTextEditor,
-  selectMultiDropdown,
-  fillInputWithPlaceholder,
-  uploadFile,
-} from "../../helpers";
 import credentials from "../../testData/credentials.json";
 import fs from "fs";
 import path from "path";
@@ -195,21 +186,16 @@ test("Verify create a post form validations", async ({
   await expect(userPage).toHaveURL(/.*\/createpost/);
 
   // STEP 1
-  await selectRadioOption(userPage, "Part Time Job (PTJ)");
-  await selectRadioOption(userPage, "Weekly");
-  await fillInput(userPage, "Job Title", "Test Post for Automation");
-  await selectDropdown(userPage, "Select Industries *", "Business");
-  await selectDropdown(
-    userPage,
-    "Select Category *",
-    "Managing and Consultant",
-  );
-  await selectDropdown(userPage, "Select Sub Category", "Project Management");
-  await selectRadioOption(userPage, "Physical");
-  await selectDropdown(userPage, "Country", "India");
-  await fillInput(userPage, "City", "Mumbai");
-  await fillRichTextEditor(
-    userPage,
+  await userPage.selectRadioOption("Part Time Job (PTJ)");
+  await userPage.selectRadioOption("Weekly");
+  await userPage.fillInput("Job Title", "Test Post for Automation");
+  await userPage.selectDropdown("Select Industries *", "Business");
+  await userPage.selectDropdown("Select Category *", "Managing and Consultant");
+  await userPage.selectDropdown("Select Sub Category", "Project Management");
+  await userPage.selectRadioOption("Physical");
+  await userPage.selectDropdown("Country", "India");
+  await userPage.fillInput("City", "Mumbai");
+  await userPage.fillRichTextEditor(
     "Job Description *",
     "This is a test description for automation",
   );
@@ -220,7 +206,7 @@ test("Verify create a post form validations", async ({
   await nextButton.click();
 
   // STEP 2
-  await selectMultiDropdown(userPage, "Select competencies", [
+  await userPage.selectMultiDropdown("Select competencies", [
     "Branding",
     "Campaigns",
   ]);
@@ -234,8 +220,7 @@ test("Verify create a post form validations", async ({
   });
 
   await addManuallyButton.click();
-  await fillInputWithPlaceholder(
-    userPage,
+  await userPage.fillInputWithPlaceholder(
     "Type a competency",
     "Dummy Competency",
   );
@@ -255,10 +240,9 @@ test("Verify create a post form validations", async ({
   await nextButton.click();
 
   // Step 3
-  await fillInputWithPlaceholder(userPage, "Enter From Price", "1000");
-  await fillInputWithPlaceholder(userPage, "Enter To Price", "5000");
-  await selectDropdown(
-    userPage,
+  await userPage.fillInputWithPlaceholder("Enter From Price", "1000");
+  await userPage.fillInputWithPlaceholder("Enter To Price", "5000");
+  await userPage.selectDropdown(
     "Preferred Language of Work Submission *",
     "English",
   );
@@ -315,17 +299,12 @@ test("Applying for post by 'Expert' user", async ({
   const applyButton = newPage.locator('button:has-text("Apply for job")');
   await applyButton.click();
 
-  await fillInputWithPlaceholder(
-    newPage,
+  await newPage.fillInputWithPlaceholder(
     "Enter your message",
     "This is a test cover letter for automation",
   );
-  await fillInputWithPlaceholder(newPage, "Enter price in $", "3000");
-  await uploadFile(
-    newPage,
-    "Attach files",
-    "testData/Cover-Letter-Samples.pdf",
-  );
+  await newPage.fillInputWithPlaceholder("Enter price in $", "3000");
+  await newPage.uploadFile("Attach files", "testData/Cover-Letter-Samples.pdf");
   const sendOfferButton = newPage.locator("//button[@type='submit']");
   await sendOfferButton.click();
   await expect(

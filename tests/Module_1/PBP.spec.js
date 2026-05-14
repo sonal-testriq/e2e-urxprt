@@ -1,17 +1,20 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../../fixtures/page.fixture.js";
 import Homepage from "../../pages/HomePage";
 import PBPPage from "../../pages/PBPPage";
 
-test("PBP account page is accessible after login", async ({ page }) => {
-  const baseUrl = "https://urxprt.com/en";
-  await page.goto(`${baseUrl}/account`);
-  const homepage = new Homepage(page);
-  const pbpPage = new PBPPage(page);
-  await homepage.navigateToPBPFromHomepage();
-  await pbpPage.verifyPBPPage();
-  await homepage.gotohomepage();
-  await homepage.navigateToPBPViaDropdown();
-  await pbpPage.verifyPBPPage();
+test("PBP account page is accessible after login", async ({
+  userHomePage,
+  userPBPPage,
+  userPage,
+}) => {
+  // navigate to PBP page from account page and verify URL
+  await userHomePage.gotoPBPViaCard();
+  await expect(userPage).toHaveURL("https://urxprt.com/en/searchall?type=1");
+
+  // navigate to PBP page via dropdown from homepage and verify URL
+  await userHomePage.gotoHomepage();
+  await userHomePage.goToPBPViaHeader();
+  await expect(userPage).toHaveURL("https://urxprt.com/en/searchall?type=1");
 });
 
 test("Search filters return expected results", async ({ page }) => {
