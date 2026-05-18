@@ -1,5 +1,6 @@
 import { expect } from "@playwright/test";
-import { BasePage } from "./base.page";
+
+import { BasePage } from "./base_page";
 
 export default class PTJPage extends BasePage {
   constructor(page) {

@@ -2,7 +2,8 @@
 import { test as authTest } from "./auth.fixture.js";
 import PTJPage from "../pages/part-time-job.page.js";
 import PBPPage from "../pages/PBPPage.js";
-import HomePage from "../pages/home.page.js";
+import HomePage from "../pages/home_page.js";
+import { BasePage } from "../pages/base_page.js";
 
 export const test = authTest.extend({
   // Expert's Job Post page object — authenticated + page object in one

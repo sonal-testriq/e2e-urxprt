@@ -1,6 +1,6 @@
 import { expect } from "@playwright/test";
-import { BasePage } from "./base.page";
-import { pageRoutes } from "../testData/constants";
+import { BasePage } from "./base_page.js";
+import { pageRoutes } from "../testData/constants.js";
 
 export default class HomePage extends BasePage {
   constructor(page) {
@@ -49,10 +49,6 @@ export default class HomePage extends BasePage {
 
   async navigateToPartTimeJobsFromHomepage() {
     await this.ptj_link_on_homepage.click();
-  }
-
-  async navigateToPBPFromHomepage() {
-    await this.pbp_link_on_homepage.click();
   }
 
   async gotoHomepage() {
@@ -118,7 +114,7 @@ export default class HomePage extends BasePage {
   async gotoDashboardPage() {
     await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
     await this.page.waitForLoadState("networkidle");
-    await this.profile_dropdown.click();
+    await this.profile_dropdown.hover();
     await expect(this.dashboard_button).toBeVisible();
     await this.dashboard_button.click();
   }
