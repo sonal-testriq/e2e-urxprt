@@ -3,4 +3,6 @@ export const pageRoutes = {
 };
 
 // export const PTJPostName = "Part Time Job Post - E2E";
-export const PTJPostName = "Temp V1 Post Automation";
+const getRandomNumber = () => Math.floor(Math.random() * 1000) + 1;
+export const PTJPostName = "Temp V2 Post Automation" + "_" + getRandomNumber();
+export const BSMProductName = "Temp BSM post" + "_" + getRandomNumber();

@@ -2,7 +2,9 @@
 import { test as authTest } from "./auth.fixture.js";
 import PTJPage from "../pages/part-time-job.page.js";
 import PBPPage from "../pages/PBPPage.js";
+import BSMPage from "../pages/BSMPage.js";
 import HomePage from "../pages/home_page.js";
+
 import { BasePage } from "../pages/base_page.js";
 
 export const test = authTest.extend({
@@ -24,6 +26,18 @@ export const test = authTest.extend({
   // Company's Job Post page (company posts jobs differently)
   userHomePage: async ({ userPage }, use) => {
     await use(new HomePage(userPage));
+  },
+  userBSMPage: async ({ userPage }, use) => {
+    await use(new BSMPage(userPage));
+  },
+
+  companyPTJPage: async ({ companyPage }, use) => {
+    await use(new PTJPage(companyPage));
+  },
+
+  // Company's Job Post page (company posts jobs differently)
+  companyHomePage: async ({ companyPage }, use) => {
+    await use(new HomePage(companyPage));
   },
 
   // User's PBP page object

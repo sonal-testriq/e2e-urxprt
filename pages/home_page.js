@@ -12,6 +12,10 @@ export default class HomePage extends BasePage {
     this.pbp_link_on_homepage = page
       .locator(".welcomepage")
       .locator("a:has-text('Find Post & Browse Projects (PBP)')");
+    this.BSM_link_on_homepage = page
+      .locator(".welcomepage")
+      .locator("a:has-text('Explore buy & sell')");
+
     this.logo = page.locator("//div[@class='logo']");
     this.part_time_jobs_tab = page.locator(
       "//li/a[contains(text(),'Part-Time Jobs')]",
@@ -24,6 +28,11 @@ export default class HomePage extends BasePage {
     );
     this.ptj_link_in_dropdown = this.part_time_jobs_dropdown.locator(
       "//a[contains(text(),'PTJ')]",
+    );
+    this.OTS_tab = page.locator("//li/a[contains(text(),'Find OTS')]");
+    this.OTS_dropdown = this.OTS_tab.locator("//following-sibling::div");
+    this.BSM_link_in_dropdown = this.OTS_dropdown.locator(
+      "//a[contains(text(),'BSM')]",
     );
     this.find_expert_tab = page.locator(
       "//li/a[contains(text(),'Find Experts')]",
@@ -75,6 +84,14 @@ export default class HomePage extends BasePage {
     await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=1"); // Assuming PBP type=1
     await this.page.waitForLoadState("networkidle");
   }
+  async gotoBSMViaCard() {
+    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
+    await this.BSM_link_on_homepage.click();
+    await expect(this.page).toHaveURL(
+      "https://urxprt.com/en/searchbuyproducts",
+    );
+    await this.page.waitForLoadState("networkidle");
+  }
 
   async goToPTJViaHeader() {
     await this.navigateViaDropdown(
@@ -91,6 +108,16 @@ export default class HomePage extends BasePage {
       "Find Post & Browse Projects (PBP)", // Assuming the item
     );
     await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=1");
+    await this.page.waitForLoadState("networkidle");
+  }
+  async goToBSMViaHeader() {
+    await this.navigateViaDropdown(
+      "Find OTS", // Assuming the menu
+      "Buy & Sell with Market (BSM)", // Assuming the item
+    );
+    await expect(this.page).toHaveURL(
+      "https://urxprt.com/en/searchbuyproducts",
+    );
     await this.page.waitForLoadState("networkidle");
   }
   async goToPTJViaDashboard() {
