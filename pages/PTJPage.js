@@ -1,11 +1,11 @@
 import { expect } from "@playwright/test";
 import { BasePage } from "./base_page";
 
-export default class PBPPage extends BasePage {
+export default class PTJPage extends BasePage {
   constructor(page) {
     super(page);
     this.postNames = page.locator("//div[@class='filter-detail']//h5");
-    this.search_box = page.getByRole("textbox", { name: "Search PBP" });
+    this.search_box = page.getByRole("textbox", { name: "Search PTJ" });
     this.search_button = page.getByRole("button", { name: "Search" });
     this.create_a_post_button = page.locator(
       "//button[contains(text(),'Create a post')]",
@@ -60,8 +60,8 @@ export default class PBPPage extends BasePage {
     this.its_cancelled_button = page.locator("//button[contains(text(),'It’s cancelled')]");
   }
 
-  async verifyPBPPage() {
-    await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=1");
+  async verifyPTJPage() {
+    await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=3");
   }
 
   async verifyPostDetailsIsVisible(newPage) {
@@ -257,12 +257,6 @@ export default class PBPPage extends BasePage {
     await expect(this.create_new_umbrella_project).toBeHidden();
   }
 
-  async goToEditProjectDetailsPage() {
-    await this.view_details_button.first().click();
-    await this.edit_details_button.click();
-    await this.page.waitForLoadState("networkidle");
-  }
-
   async clickOnSaveNButton() {
     await this.save_button.click();
   }
@@ -271,6 +265,12 @@ export default class PBPPage extends BasePage {
     await this.cancel_button.click();
     await expect(this.confirm_cancellation_popup).toBeVisible();
     await this.confirm_cancellation_button.click();
+  }
+
+  async goToEditProjectJobPage() {
+    await this.view_details_button.first().click();
+    await this.edit_details_button.click();
+    await this.page.waitForLoadState("networkidle");
   }
 
 }

@@ -2,6 +2,7 @@
 import { test as authTest } from "./auth.fixture.js";
 import PTJPage from "../pages/part-time-job.page.js";
 import PBPPage from "../pages/PBPPage.js";
+import WBOPage from "../pages/WBOPage.js";
 import BSMPage from "../pages/BSMPage.js";
 import HomePage from "../pages/home_page.js";
 
@@ -43,6 +44,11 @@ export const test = authTest.extend({
   // User's PBP page object
   userPBPPage: async ({ userPage }, use) => {
     await use(new PBPPage(userPage));
+  },
+
+  // User's WBO page object
+  userWBOPage: async ({ userPage }, use) => {
+    await use(new WBOPage(userPage));
   },
 
   // Expert's PBP page object

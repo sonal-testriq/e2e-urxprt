@@ -12,6 +12,11 @@ export default class HomePage extends BasePage {
     this.pbp_link_on_homepage = page
       .locator(".welcomepage")
       .locator("a:has-text('Find Post & Browse Projects (PBP)')");
+
+    this.wbo_link_on_homepage = page
+    .locator(".welcomepage")
+    .locator("a:has-text('Explore Win business Opportunities (WBO)')");
+
     this.BSM_link_on_homepage = page
       .locator(".welcomepage")
       .locator("a:has-text('Explore buy & sell')");
@@ -54,7 +59,16 @@ export default class HomePage extends BasePage {
       "//div[contains(@class,'mobile-menu-header')]",
     );
     this.dashboard_button = page.locator("//a[contains(text(),'Dashboard')]");
-  }
+    this.preview_button = page.getByRole('button', { name: 'preview' });
+    this.my_orders_button = page.getByText('My Orders');
+    this.pbp_orders = page.locator("//div[@id='MyOrderPostedorders']//a[contains(text(),'Post & Browse Project')]");
+    this.wbo_orders = page.locator("//div[@id='MyOrderPostedorders']//a[contains(text(),'Win business Opportunities')]");
+    this.ptj_orders = page.locator("//div[@id='MyOrderPostedorders']//a[contains(text(),'Part time Job')]");
+    this.postNamesOnMyOrders = page.locator("//h4[contains(text(),'Posted Post')]/parent::div/following-sibling::div//h3");
+    this.post_contest_name_in_pending_payment_contest = page.locator("(//h4[contains(text(),'Payment Pending Contest')]/parent::div/following-sibling::div)[1]//h3");
+    this.post_contest_name_in_all_active_wbo = page.locator("(//h4[contains(text(),'All Active Win business Opportunities')]/parent::div/following-sibling::div)[1]//h3");
+    this.post_job_name_in_part_time_job = page.locator("(//h4[contains(text(),'Posted Part time Job')]/parent::div/following-sibling::div)[1]//h1/parent::div//h3")
+  } 
 
   async navigateToPartTimeJobsFromHomepage() {
     await this.ptj_link_on_homepage.click();
@@ -84,6 +98,14 @@ export default class HomePage extends BasePage {
     await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=1"); // Assuming PBP type=1
     await this.page.waitForLoadState("networkidle");
   }
+
+  async gotoWBOViaCard() {
+    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
+    await this.wbo_link_on_homepage.click(); // Assuming same link or adjust
+    await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=2"); // Assuming WBO type=2
+    await this.page.waitForLoadState("networkidle");
+  }
+
   async gotoBSMViaCard() {
     await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
     await this.BSM_link_on_homepage.click();
@@ -110,6 +132,16 @@ export default class HomePage extends BasePage {
     await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=1");
     await this.page.waitForLoadState("networkidle");
   }
+
+  async goToWBOViaHeader() {
+    await this.navigateViaDropdown(
+      "Part-Time Jobs", // Assuming the menu
+      "Search Business Opportunities (WBO)", // Assuming the item
+    );
+    await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=2");
+    await this.page.waitForLoadState("networkidle");
+  }
+
   async goToBSMViaHeader() {
     await this.navigateViaDropdown(
       "Find OTS", // Assuming the menu
@@ -145,4 +177,23 @@ export default class HomePage extends BasePage {
     await expect(this.dashboard_button).toBeVisible();
     await this.dashboard_button.click();
   }
+
+  async navigateToMyOrdersViaPreview() {
+    await this.preview_button.click();
+    await expect(this.my_orders_button.first()).toBeVisible();
+    await this.my_orders_button.first().click();
+  }
+
+  async openPBPPostFromMyOrders() {
+    await this.pbp_orders.first().click();
+  }
+
+  async openWBOPostFromMyOrders() {
+    await this.wbo_orders.first().click();
+  }
+
+  async openPTJPostFromMyOrders() {
+    await this.ptj_orders.first().click();
+  }
+
 }
