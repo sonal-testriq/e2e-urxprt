@@ -4,6 +4,7 @@ import PTJPage from "../pages/part-time-job.page.js";
 import PBPPage from "../pages/PBPPage.js";
 import WBOPage from "../pages/WBOPage.js";
 import BSMPage from "../pages/BSMPage.js";
+import FTJPage from "../pages/FTJPage.js";
 import HomePage from "../pages/home_page.js";
 
 import { BasePage } from "../pages/base_page.js";
@@ -44,6 +45,16 @@ export const test = authTest.extend({
   // User's PBP page object
   userPBPPage: async ({ userPage }, use) => {
     await use(new PBPPage(userPage));
+  },
+
+  // User's FTJ page object
+  userFTJPage: async ({ userPage }, use) => {
+    await use(new FTJPage(userPage));
+  },
+
+  // Expert's FTJ page object
+  expertFTJPage: async ({ expertPage }, use) => {
+    await use(new FTJPage(expertPage));
   },
 
   // User's WBO page object

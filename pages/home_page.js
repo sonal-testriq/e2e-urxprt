@@ -124,6 +124,13 @@ export default class HomePage extends BasePage {
     await this.page.waitForLoadState("networkidle");
   }
 
+  async goToFTJViaHeader() {
+    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
+    await this.navigateViaDirectClick("Full Time Job (FTJ)");
+    await expect(this.page).toHaveURL("https://urxprt.com/en/searchdownloadcv");
+    await this.page.waitForLoadState("networkidle");
+  }
+
   async goToPBPViaHeader() {
     await this.navigateViaDropdown(
       "Part-Time Jobs", // Assuming the menu

@@ -1,13 +1,5 @@
 import { test, expect } from "../../fixtures/page.fixture.js";
-import PTJPage from "../../pages/PTJPage.js";
-import { assert } from "node:console";
-import { describe } from "node:test";
-import credentials from "../../testData/credentials.json";
-import fs from "fs";
-import path from "path";
 import { pageRoutes, PTJPost_Name } from "../../testData/constants.js";
-
-import { BasePage } from "../../pages/base_page.js";
 
 
 test("TC_PTJ_001: PTJ account page is accessible after login", async ({
