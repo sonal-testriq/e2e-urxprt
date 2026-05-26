@@ -6,6 +6,7 @@ import WBOPage from "../pages/WBOPage.js";
 import BSMPage from "../pages/BSMPage.js";
 import FTJPage from "../pages/FTJPage.js";
 import HomePage from "../pages/home_page.js";
+import hireCompanyAndExpertPage from "../pages/hireCompanyAndExpertPage.js";
 
 import { BasePage } from "../pages/base_page.js";
 
@@ -18,6 +19,10 @@ export const test = authTest.extend({
   // Company's Job Post page (company posts jobs differently)
   expertHomePage: async ({ expertPage }, use) => {
     await use(new HomePage(expertPage));
+  },
+
+  companyHomePage: async ({ companyPage }, use) => {
+    await use(new HomePage(companyPage));
   },
 
   // Expert's Job Post page object — authenticated + page object in one
@@ -42,9 +47,28 @@ export const test = authTest.extend({
     await use(new HomePage(companyPage));
   },
 
+  companyFTJPage: async ({ companyPage }, use) => {
+    await use(new FTJPage(companyPage));
+  },
+
   // User's PBP page object
   userPBPPage: async ({ userPage }, use) => {
     await use(new PBPPage(userPage));
+  },
+
+  // User's Hire page object
+  userHirePage: async ({ userPage }, use) => {
+    await use(new hireCompanyAndExpertPage(userPage));
+  },
+
+  // Expert's Hire page object
+  expertHirePage: async ({ expertPage }, use) => {
+    await use(new hireCompanyAndExpertPage(expertPage));
+  },
+
+  // Company's Hire page object
+  companyHirePage: async ({ companyPage }, use) => {
+    await use(new hireCompanyAndExpertPage(companyPage));
   },
 
   // User's FTJ page object
@@ -65,6 +89,11 @@ export const test = authTest.extend({
   // Expert's PBP page object
   expertPBPPage: async ({ expertPage }, use) => {
     await use(new PBPPage(expertPage));
+  },
+
+  // Company's PBP page object
+  companyPBPPage: async ({ companyPage }, use) => {
+    await use(new PBPPage(companyPage));
   },
 });
 

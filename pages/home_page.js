@@ -140,6 +140,16 @@ export default class HomePage extends BasePage {
     await this.page.waitForLoadState("networkidle");
   }
 
+  async goToFindExpertOrCompanyViaHeader() {
+    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
+    await this.navigateViaDropdown(
+      "Find Experts", // Assuming the menu
+      "Find Expert / Company", // Assuming the item
+    );
+    await expect(this.page).toHaveURL("https://urxprt.com/en/hireexpertsmainpage");
+    await this.page.waitForLoadState("networkidle");
+  }
+
   async goToWBOViaHeader() {
     await this.navigateViaDropdown(
       "Part-Time Jobs", // Assuming the menu
