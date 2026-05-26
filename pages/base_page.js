@@ -95,4 +95,19 @@ export class BasePage {
     await menuItem.locator("a.nav-item").hover();
     await menuItem.locator(".nav-drop a", { hasText: itemText }).click();
   }
+
+  async navigateViaDirectClick(menuLabel) {
+    const menuItem = this.page.locator("ul.menu > li").filter({
+      has: this.page.locator(`a.nav-item:has-text("${menuLabel}")`),
+    });
+    await menuItem.locator("a.nav-item").click();
+  }
+
+  async clickOnEditButton(label) {
+    const editButton = this.page
+      .locator("//p[contains(text(),'" + label + "')]/parent::div/following-sibling::span/img");
+    await expect(editButton).toBeEnabled();
+    await editButton.click();
+  }
+
 }
