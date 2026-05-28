@@ -10,7 +10,7 @@ import { pageRoutes, PTJPostName } from "../../testData/constants.js";
 import { BasePage } from "../../pages/base_page.js";
 
 test.describe.serial("PTJ Flow", () => {
-  test("PTJ account page is accessible after login", async ({
+  test.only("PTJ account page is accessible after login", async ({
     userHomePage,
     userPage,
   }) => {
@@ -284,7 +284,7 @@ test.describe.serial("PTJ Flow", () => {
     await approveByCheck.click();
     await userPage.waitForTimeout(2000);
   });
-  test.only("Approving logged job by using 'Approve all' button", async ({
+  test("Approving logged job by using 'Approve all' button", async ({
     userPage,
     userHomePage,
   }) => {

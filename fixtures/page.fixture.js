@@ -4,7 +4,7 @@ import PTJPage from "../pages/part-time-job.page.js";
 import PBPPage from "../pages/PBPPage.js";
 import BSMPage from "../pages/BSMPage.js";
 import HomePage from "../pages/home_page.js";
-
+import TAIPage from "../pages/TAIPage.js";
 import { BasePage } from "../pages/base_page.js";
 
 export const test = authTest.extend({
@@ -29,6 +29,21 @@ export const test = authTest.extend({
   },
   userBSMPage: async ({ userPage }, use) => {
     await use(new BSMPage(userPage));
+  },
+  userTAIPage: async ({ userPage }, use) => {
+    await use(new TAIPage(userPage));
+  },
+  expertBSMPage: async ({ expertPage }, use) => {
+    await use(new BSMPage(expertPage));
+  },
+  expertTAIPage: async ({ expertPage }, use) => {
+    await use(new TAIPage(expertPage));
+  },
+  companyBSMPage: async ({ companyPage }, use) => {
+    await use(new BSMPage(companyPage));
+  },
+  companyTAIPage: async ({ companyPage }, use) => {
+    await use(new TAIPage(companyPage));
   },
 
   companyPTJPage: async ({ companyPage }, use) => {

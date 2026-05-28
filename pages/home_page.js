@@ -15,6 +15,10 @@ export default class HomePage extends BasePage {
     this.BSM_link_on_homepage = page
       .locator(".welcomepage")
       .locator("a:has-text('Explore buy & sell')");
+    this.TAI_link_on_homepage = page
+      .locator(".welcomepage")
+      .locator("a:has-text('Let’s get started')")
+      .first();
 
     this.logo = page.locator("//div[@class='logo']");
     this.part_time_jobs_tab = page.locator(
@@ -33,6 +37,9 @@ export default class HomePage extends BasePage {
     this.OTS_dropdown = this.OTS_tab.locator("//following-sibling::div");
     this.BSM_link_in_dropdown = this.OTS_dropdown.locator(
       "//a[contains(text(),'BSM')]",
+    );
+    this.TAI_link_in_dropdown = this.OTS_dropdown.locator(
+      "//a[contains(text(),'TAI')]",
     );
     this.find_expert_tab = page.locator(
       "//li/a[contains(text(),'Find Experts')]",
@@ -72,23 +79,31 @@ export default class HomePage extends BasePage {
   }
 
   async gotoPTJViaCard() {
-    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
+    await this.page.goto(pageRoutes.account, { waitUntil: "domcontentloaded" });
     await this.ptj_link_on_homepage.click();
     await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=3");
     await this.page.waitForLoadState("networkidle");
   }
 
   async gotoPBPViaCard() {
-    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
+    await this.page.goto(pageRoutes.account, { waitUntil: "domcontentloaded" });
     await this.pbp_link_on_homepage.click(); // Assuming same link or adjust
     await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=1"); // Assuming PBP type=1
     await this.page.waitForLoadState("networkidle");
   }
   async gotoBSMViaCard() {
-    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
+    await this.page.goto(pageRoutes.account, { waitUntil: "domcontentloaded" });
     await this.BSM_link_on_homepage.click();
     await expect(this.page).toHaveURL(
       "https://urxprt.com/en/searchbuyproducts",
+    );
+    await this.page.waitForLoadState("networkidle");
+  }
+  async gotoTAIViaCard() {
+    await this.page.goto(pageRoutes.account, { waitUntil: "domcontentloaded" });
+    await this.TAI_link_on_homepage.click();
+    await expect(this.page).toHaveURL(
+      "https://urxprt.com/en/searchrentproducts",
     );
     await this.page.waitForLoadState("networkidle");
   }
@@ -144,5 +159,15 @@ export default class HomePage extends BasePage {
     await this.profile_dropdown.hover();
     await expect(this.dashboard_button).toBeVisible();
     await this.dashboard_button.click();
+  }
+  async gotoReceivedOrders() {
+    {
+      await this.page
+        .locator("div.sidebar-menu a", { hasText: "Received Orders" })
+        .click();
+      await expect(this.page).toHaveURL(
+        "https://urxprt.com/en/dashboard/receivedorders",
+      );
+    }
   }
 }
