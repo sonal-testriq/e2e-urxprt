@@ -1,11 +1,11 @@
 import { expect } from "@playwright/test";
 import { BasePage } from "./base_page";
 
-export default class PBPPage extends BasePage {
+export default class WBOPage extends BasePage {
   constructor(page) {
     super(page);
     this.postNames = page.locator("//div[@class='filter-detail']//h5");
-    this.search_box = page.getByRole("textbox", { name: "Search PBP" });
+    this.search_box = page.getByRole("textbox", { name: "Search WBO" });
     this.search_button = page.getByRole("button", { name: "Search" });
     this.create_a_post_button = page.locator(
       "//button[contains(text(),'Create a post')]",
@@ -37,6 +37,7 @@ export default class PBPPage extends BasePage {
       "//a[contains(text(),'Clear filters')]",
     );
     this.pagination = page.locator("//ul[@class='pagination']/li/a");
+    this.posts_list = page.locator(".filter-detail");
     this.apply_button = page.locator("//button[contains(text(),'Apply Now')]");
     this.next_button = page.getByRole("button", { name: "Next" });
     this.required_error = page.getByText("This is required");
@@ -53,6 +54,7 @@ export default class PBPPage extends BasePage {
     this.expected_deliverables_input = page.locator("//div[contains(@class,'ql-editor')]");
     this.view_details_button = page.locator("//button[contains(text(),'View details')]");
     this.edit_details_button = page.locator("//button[contains(text(),'Edit details')]");
+    this.paynow_button = page.locator("//button[contains(text(),'Pay now')]");
     this.cancel_button = page.locator("//button[contains(text(),'Cancel')]");
     this.save_button = page.locator("//button[contains(text(),'Save')]");
     this.confirm_cancellation_popup = page.locator("//h4[contains(text(),'Confirm Cancellation')]");
@@ -60,8 +62,8 @@ export default class PBPPage extends BasePage {
     this.its_cancelled_button = page.locator("//button[contains(text(),'It’s cancelled')]");
   }
 
-  async verifyPBPPage() {
-    await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=1");
+  async verifyWBOPage() {
+    await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=2");
   }
 
   async verifyPostDetailsIsVisible(newPage) {
@@ -182,6 +184,11 @@ export default class PBPPage extends BasePage {
     return await this.pagination.nth(totalCount - 2).textContent();
   }
 
+  async getTotalPostsCount() {
+    const totalCount = await this.posts_list.count();
+    return totalCount;
+  }
+
   async getUpdatedPageNumber() {
     const before = await this.pagination.allTextContents();
     await expect(async () => {
@@ -195,6 +202,7 @@ export default class PBPPage extends BasePage {
 
   async removeFilter() {
     await this.clear_filter_button.click();
+    await this.page.waitForLoadState("networkidle");
   }
 
   async clickOnApplyButton(newPage) {
@@ -263,14 +271,31 @@ export default class PBPPage extends BasePage {
     await this.page.waitForLoadState("networkidle");
   }
 
+  async goToOrderSummaryPage() {
+    await this.view_details_button.first().click();
+    await this.paynow_button.click();
+    await this.page.waitForLoadState("networkidle");
+  }
+
   async clickOnSaveNButton() {
     await this.save_button.click();
   }
 
-  async cancelCreatedPBPPost() {
+  async cancelCreatedWBOPost() {
     await this.cancel_button.click();
     await expect(this.confirm_cancellation_popup).toBeVisible();
     await this.confirm_cancellation_button.click();
+  }
+
+  async selectEntryOfUser(userName) {
+    const entry = this.page.locator("//span[contains(.,'" + userName + "')]/ancestor::div[2]//img");
+    await entry.click();
+  }
+
+  async writeComment(comment) {
+    const commentBox = await this.page.locator(".rent-product #comment");
+    await commentBox.click();
+    await commentBox.fill(comment);
   }
 
 }

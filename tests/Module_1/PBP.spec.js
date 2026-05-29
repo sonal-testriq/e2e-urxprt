@@ -1,6 +1,7 @@
 import { test, expect } from "../../fixtures/page.fixture.js";
+import { pageRoutes, PBPPostName } from "../../testData/constants.js";
 
-test("PBP account page is accessible after login", async ({
+test("TC_PBP_001: PBP account page is accessible after login", async ({
   userHomePage,
   userPBPPage,
   userPage,
@@ -15,7 +16,7 @@ test("PBP account page is accessible after login", async ({
   await expect(userPage).toHaveURL("https://urxprt.com/en/searchall?type=1");
 });
 
-test("Search filters return expected results", async ({
+test("TC_PBP_002: Search filters return expected results", async ({
   userPage,
   userHomePage,
   userPBPPage,
@@ -35,7 +36,7 @@ test("Search filters return expected results", async ({
   expect(count).toBeGreaterThanOrEqual(1);
 });
 
-test("Navigate to create post page from homepage and dashboard", async ({
+test("TC_PBP_003: Navigate to create post page from homepage and dashboard", async ({
   userPage,
   userHomePage,
   userPBPPage,
@@ -52,7 +53,7 @@ test("Navigate to create post page from homepage and dashboard", async ({
   await expect(userPage).toHaveURL(/.*\/createpost/);
 });
 
-test("View filtered post details and verify recently reviewed posts", async ({
+test("TC_PBP_004: View filtered post details and verify recently reviewed posts", async ({
   userPage,
   userHomePage,
   userPBPPage,
@@ -74,7 +75,7 @@ test("View filtered post details and verify recently reviewed posts", async ({
   expect(isPresent).toBeTruthy();
 });
 
-test("Save a filtered post and verify saved posts page", async ({
+test("TC_PBP_005: Save a filtered post and verify saved posts page", async ({
   userPage,
   userHomePage,
   userPBPPage,
@@ -95,7 +96,7 @@ test("Save a filtered post and verify saved posts page", async ({
   await userPBPPage.verifyThatTheTabHasNoPosts();
 });
 
-test("Apply multiple filters and verify counts update correctly", async ({
+test("TC_PBP_006: Apply multiple filters and verify counts update correctly", async ({
   userPage,
   userHomePage,
   userPBPPage,
@@ -126,7 +127,7 @@ test("Apply multiple filters and verify counts update correctly", async ({
   expect(countAfterClearingFilter).toEqual(originalPageCount);
 });
 
-test("Verify Join as Expert/Company popup opens from a post detail", async ({
+test("TC_PBP_007: Verify Join as Expert/Company popup opens from a post detail", async ({
   userPage,
   userHomePage,
   userPBPPage,
@@ -150,7 +151,7 @@ test("Verify Join as Expert/Company popup opens from a post detail", async ({
   await userPage.reload();
 });
 
-test("Validate create post form errors and umbrella checkbox behavior", async ({
+test("TC_PBP_008: Validate create post form errors and umbrella checkbox behavior", async ({
   userPage,
   userHomePage,
   userPBPPage,
@@ -170,3 +171,153 @@ test("Validate create post form errors and umbrella checkbox behavior", async ({
   await userPBPPage.clickOnUmbrellaCheckbox();
   await userPBPPage.verifyUmbrellaSelectAndCreateNewOptionIsHidden();
 });
+
+test.describe("TC_PBP_Post: Post Operations", () => {
+  test.describe.configure({ mode: 'serial' });
+  test("TC_PBP_001: Verify create post from PBP page", async ({
+  userPage,
+  userHomePage,
+  userPBPPage,
+  }) => {
+    await userHomePage.gotoPBPViaCard();
+    await userPBPPage.clickOnCreateAPostButton();
+    await expect(userPage).toHaveURL(/.*\/createpost/);
+    await userPBPPage.fillInput("Write a title for your post ", PBPPostName);
+    await userPBPPage.selectDropdown("Select Industries *", "Business");
+    await userPBPPage.selectDropdown(
+      "Select Category *",
+      "Managing and Consultant",
+    );
+    await userPBPPage.selectDropdown(
+      "Select Sub Category",
+      "Project Management",
+    );
+    await userPBPPage.fillRichTextEditor(
+      "Project Description *",
+      "This is a test description for automation",
+    );
+    await userPage.waitForTimeout(2000); // wait for validation to trigger
+    const nextButton = userPage.getByRole("button", { name: "Next" });
+    await expect(nextButton).toBeEnabled();
+    await nextButton.click();
+    await userPBPPage.selectMultiDropdown("Select competencies", [
+      "Branding",
+      "Campaigns",
+    ]);
+    await nextButton.click();
+    await expect(userPBPPage.required_competencies_error).toBeVisible();
+    const skill = userPage.locator("p.select-deactive-skill", { hasText: "CRM +", exact: true,});
+    await skill.click();
+    await nextButton.click();
+    await nextButton.click();
+    await expect(userPBPPage.maximum_project_budget_error).toBeVisible();
+    await expect(userPBPPage.duration_required_error).toBeVisible();
+    await userPBPPage.fillInputWithPlaceholder("Enter Budget in $", "10");
+    await userPBPPage.fillInputWithPlaceholder("Enter number of days", "10");
+    await nextButton.click();
+    await userPBPPage.expected_deliverables_input.fill("This is test deliverable");
+    await userPBPPage.selectDropdown(
+      "Preferred Language of Work Submission *",
+      "English",
+    );
+    await userPage.waitForTimeout(1000);
+    await expect(nextButton).toBeEnabled();
+    await nextButton.click();
+    await expect(
+      userPage.getByText("Post & Browse Projects (PBP) Summary"),
+    ).toBeVisible();  
+    const postJobButton = userPage.getByRole("button", { name: "Post Project" });
+    postJobButton.click();
+    await expect(
+      userPage.getByText("Congratulations! Your post is now live."),
+    ).toBeVisible();
+  });
+
+  test("TC_PBP_002: Search filters return newly created post in results", async ({
+      userPage,
+      userHomePage,
+    }) => {
+      await userHomePage.gotoPBPViaCard();
+      // await userHomePage.searchOnPBPPage('Frontend Developer');
+      const search_box = userPage.getByRole("textbox", { name: "Search PBP" });
+      const search_button = userPage.getByRole("button", { name: "Search" });
+      //   await userPage.waitForTimeout(2000);
+      await search_box.fill(PBPPostName);
+      await search_button.click();
+      await userPage.waitForLoadState("networkidle"); // wait for search results to load
+      const postNames = await userPage.locator(
+        "//div[@class='filter-detail']//h5",
+      );
+      await postNames.first().waitFor();
+      const count = await postNames.count();
+      expect(count).toBe(1);
+  });
+
+  test("TC_PBP_003: Verify newly created post are displayed in My Orders under Posted Posts", async ({
+  userPage,
+  userHomePage,
+  }) => {
+    await userHomePage.gotoPBPViaCard();
+    await userHomePage.navigateToMyOrdersViaPreview();
+    await userHomePage.openPBPPostFromMyOrders();
+    await expect(userHomePage.postNamesOnMyOrders.first()).toHaveText(PBPPostName);
+  })
+
+  test("TC_PBP_004: Verify newly created post are editable", async ({
+  userPage,
+  userHomePage,
+  userPBPPage,
+  }) => {
+    await userHomePage.gotoPBPViaCard();
+    await userHomePage.navigateToMyOrdersViaPreview();
+    await userHomePage.openPBPPostFromMyOrders();
+    await expect(userHomePage.postNamesOnMyOrders.first()).toBeVisible();
+    await userPBPPage.goToEditProjectDetailsPage();
+    await userHomePage.clickOnEditButton("Project Title");
+    await userPBPPage.fillInput("Enter Title", PBPPostName+" Edited");
+    await userPBPPage.clickOnSaveNButton();
+    const postProjectButton = userPage.getByRole("button", { name: "Post Project" });
+    postProjectButton.click();
+    await expect(
+      userPage.getByText("PBP updated sucessfully"),
+    ).toBeVisible();
+    await userHomePage.navigateToMyOrdersViaPreview();
+    await userHomePage.openPBPPostFromMyOrders();
+    await expect(userHomePage.postNamesOnMyOrders.first()).toHaveText(PBPPostName+" Edited");
+  })
+
+  test("TC_PBP_005: Verify newly created post can be cancelled", async ({
+  userPage,
+  userHomePage,
+  userPBPPage,
+  }) => {
+    await userHomePage.gotoPBPViaCard();
+    await userHomePage.navigateToMyOrdersViaPreview();
+    await userHomePage.openPBPPostFromMyOrders();
+    await expect(userHomePage.postNamesOnMyOrders.first()).toBeVisible();
+    await userPBPPage.view_details_button.click();
+    await userPBPPage.cancelCreatedPBPPost();
+    await expect(
+      userPage.getByText("Your post has been successfully cancelled"),
+    ).toBeVisible();
+  })
+
+  test("TC_PBP_006: Search filters return newly created post in results", async ({
+      userPage,
+      userHomePage,
+    }) => {
+      await userHomePage.gotoPBPViaCard();
+      const search_box = userPage.getByRole("textbox", { name: "Search PBP" });
+      const search_button = userPage.getByRole("button", { name: "Search" });
+      await search_box.fill(PBPPostName);
+      await search_button.click();
+      await userPage.waitForLoadState("networkidle"); 
+      const postNames = await userPage.locator(
+        "//div[@class='filter-detail']//h5",
+      );
+      await expect(postNames.first()).not.toBeVisible();
+      const count = await postNames.count();
+      expect(count).toBe(0);
+  });
+});
+
