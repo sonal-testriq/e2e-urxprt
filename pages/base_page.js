@@ -46,6 +46,7 @@ export class BasePage {
 
   async fillInputWithPlaceholder(placeholder, value) {
     const inputField = this.page.getByPlaceholder(placeholder);
+    await inputField.clear();
     await inputField.fill(value);
   }
 
@@ -96,6 +97,11 @@ export class BasePage {
     await menuItem.locator(".nav-drop a", { hasText: itemText }).click();
   }
 
+  async clickFromDropdown(menuLabel, optionText) {
+    await this.page.locator("//label[contains(text(),'" + menuLabel + "')]/following-sibling::div").click();
+    await this.page.locator('[role="option"]', { hasText: optionText }).click();
+  }
+
   async navigateViaDirectClick(menuLabel) {
     const menuItem = this.page.locator("ul.menu > li").filter({
       has: this.page.locator(`a.nav-item:has-text("${menuLabel}")`),
@@ -108,6 +114,16 @@ export class BasePage {
       .locator("//p[contains(text(),'" + label + "')]/parent::div/following-sibling::span/img");
     await expect(editButton).toBeEnabled();
     await editButton.click();
+  }
+
+  async clickOnCheckbox(label) {
+    const checkbox = this.page.locator("//label[contains(text(),'" + label + "')]/parent::div/input");
+    await checkbox.click();
+  }
+
+  async hoverOverNotifivationIcon() {
+    const notificationIcon = await this.page.locator(".dropdown.dropdown1");
+    await notificationIcon.hover();
   }
 
 }
