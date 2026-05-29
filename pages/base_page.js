@@ -36,6 +36,16 @@ export class BasePage {
     await radioOption.check();
     await expect(radioOption).toBeChecked();
   }
+  async setCheckbox(labelText, shouldBeChecked = true) {
+    const checkbox = this.page.getByRole("checkbox", { name: labelText });
+    await checkbox.setChecked(shouldBeChecked);
+
+    if (shouldBeChecked) {
+      await expect(checkbox).toBeChecked();
+    } else {
+      await expect(checkbox).not.toBeChecked();
+    }
+  }
 
   async fillInput(label, value) {
     const inputField = this.page

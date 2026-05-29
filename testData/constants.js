@@ -33,6 +33,7 @@ export const authData = {
 // export const PTJPostName = "Part Time Job Post - E2E";
 const getRandomNumber = () => Math.floor(Math.random() * 1000) + 1;
 export const PTJPostName = "Temp V2 Post Automation" + "_" + getRandomNumber();
+export const TAIProductName = "Temp TAI post" + getRandomNumber();
 export const BSMProductName = "Temp BSM post" + "_" + getRandomNumber();
 export const PBPPostName = "PBP Post Automation" + "_" + getRandomNumber();
 export const WBOPostName = "WBO Post Automation" + "_" + getRandomNumber();

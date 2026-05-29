@@ -6,6 +6,7 @@ import WBOPage from "../pages/WBOPage.js";
 import BSMPage from "../pages/BSMPage.js";
 import FTJPage from "../pages/FTJPage.js";
 import HomePage from "../pages/home_page.js";
+import TAIPage from "../pages/TAIPage.js";
 import hireCompanyAndExpertPage from "../pages/hireCompanyAndExpertPage.js";
 
 import { BasePage } from "../pages/base_page.js";
@@ -36,6 +37,21 @@ export const test = authTest.extend({
   },
   userBSMPage: async ({ userPage }, use) => {
     await use(new BSMPage(userPage));
+  },
+  userTAIPage: async ({ userPage }, use) => {
+    await use(new TAIPage(userPage));
+  },
+  expertBSMPage: async ({ expertPage }, use) => {
+    await use(new BSMPage(expertPage));
+  },
+  expertTAIPage: async ({ expertPage }, use) => {
+    await use(new TAIPage(expertPage));
+  },
+  companyBSMPage: async ({ companyPage }, use) => {
+    await use(new BSMPage(companyPage));
+  },
+  companyTAIPage: async ({ companyPage }, use) => {
+    await use(new TAIPage(companyPage));
   },
 
   companyPTJPage: async ({ companyPage }, use) => {
