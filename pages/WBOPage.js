@@ -287,4 +287,15 @@ export default class WBOPage extends BasePage {
     await this.confirm_cancellation_button.click();
   }
 
+  async selectEntryOfUser(userName) {
+    const entry = this.page.locator("//span[contains(.,'" + userName + "')]/ancestor::div[2]//img");
+    await entry.click();
+  }
+
+  async writeComment(comment) {
+    const commentBox = await this.page.locator(".rent-product #comment");
+    await commentBox.click();
+    await commentBox.fill(comment);
+  }
+
 }

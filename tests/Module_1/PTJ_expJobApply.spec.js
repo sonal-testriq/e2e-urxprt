@@ -547,7 +547,11 @@ test.describe.serial("PTJ Flow", () => {
 
     await expect(endPopup).toBeHidden();
 
-    await expertPage.locator("#date").fill("2026-05-18");
+    function getCurrentDate() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    await expertPage.locator("#date").fill(getCurrentDate());
     const totalHours = expertPage
       .locator(".form-group")
       .filter({ hasText: "Total hours" })
@@ -586,8 +590,18 @@ test.describe.serial("PTJ Flow", () => {
     const pendingSheetTab = expertPage.locator("button, a", {
       hasText: "Pending Sheets",
     });
+
+    function getFormattedDate() {
+    const date = new Date();
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  }
+
     await expect(pendingSheetTab).toHaveClass(/active/);
-    const dateUpdated = expertPage.locator("h6", { hasText: "18 May 2026" });
+    const dateUpdated = expertPage.locator("h6", { hasText: getFormattedDate() });
     await expect(dateUpdated).toBeVisible();
     const totalHours = dateUpdated.locator("span", {
       hasText: "Total : 06:00:00",
