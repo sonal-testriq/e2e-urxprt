@@ -1,6 +1,6 @@
-import { test, expect } from "../../fixtures/page.fixture.js";
-import { pageRoutes, WBOPostName } from "../../testData/constants.js";
-import { BasePage } from "../../pages/base_page.js";
+import { test, expect } from "../../../fixtures/page.fixture.js";
+import { pageRoutes, WBOPostName } from "../../../testData/constants.js";
+import { BasePage } from "../../../pages/base_page.js";
 
 test.describe.serial("WBO Flow", () => {
     test("TC_WBO_001: Verify create post from WBO page", async ({

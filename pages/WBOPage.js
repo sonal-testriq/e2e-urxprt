@@ -60,6 +60,7 @@ export default class WBOPage extends BasePage {
     this.confirm_cancellation_popup = page.locator("//h4[contains(text(),'Confirm Cancellation')]");
     this.confirm_cancellation_button = page.locator("//button[contains(text(),'Confirm')]");
     this.its_cancelled_button = page.locator("//button[contains(text(),'It’s cancelled')]");
+    this.cards = page.locator("//div[@class='post-back']");
   }
 
   async verifyWBOPage() {
@@ -114,6 +115,11 @@ export default class WBOPage extends BasePage {
   async searchFor(text) {
     await this.search_box.fill(text);
     await this.search_button.click();
+  }
+
+  async searchForAndWait(text) {
+    await this.searchFor(text);
+    await this.waitForPosts();
   }
 
   async waitForFilteredResults() {
@@ -297,5 +303,22 @@ export default class WBOPage extends BasePage {
     await commentBox.click();
     await commentBox.fill(comment);
   }
+
+  async getDelayedPostName(entryCount) {
+        await this.cards.first().waitFor();
+        const cardCount = await this.cards.count();
+        for (let i = 0; i < cardCount; i++) {
+            const card = this.cards.nth(i);
+            const delay = (await card.locator("//i/parent::p").textContent())?.trim();
+            const entries = (await card.locator("//div[contains(@class,'activity')]//p").textContent())?.trim();
+            if (
+                delay?.includes('days delay') &&
+                entries === `Entries: ${entryCount}`
+            ) {
+                return (await card.locator("//h3").textContent())?.trim();
+            }
+        }
+        return null; // No matching post found
+    }
 
 }

@@ -1,13 +1,13 @@
-import { test, expect } from "../../fixtures/page.fixture.js";
-import BSMPage from "../../pages/BSMPage.js";
+import { test, expect } from "../../../fixtures/page.fixture.js";
+import BSMPage from "../../../pages/BSMPage.js";
 import { assert } from "node:console";
 import { describe } from "node:test";
-import credentials from "../../testData/credentials.json";
+import credentials from "../../../testData/credentials.json";
 import fs from "fs";
 import path from "path";
-import { pageRoutes, BSMProductName } from "../../testData/constants.js";
+import { pageRoutes, BSMProductName } from "../../../testData/constants.js";
 
-import { BasePage } from "../../pages/base_page.js";
+import { BasePage } from "../../../pages/base_page.js";
 import { setEngine } from "node:crypto";
 test.describe.serial("PTJ Flow", () => {
   test.only("Adding a product by user at BSM", async ({

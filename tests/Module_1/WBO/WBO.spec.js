@@ -1,5 +1,5 @@
-import { test, expect } from "../../fixtures/page.fixture.js";
-import { pageRoutes, WBOPostName } from "../../testData/constants.js";
+import { test, expect } from "../../../fixtures/page.fixture.js";
+import { pageRoutes, WBOPostName } from "../../../testData/constants.js";
 
 test("TC_WBO_001: WBO account page is accessible after login", async ({
   userHomePage,

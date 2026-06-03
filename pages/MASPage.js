@@ -1,45 +1,36 @@
 import { expect } from "@playwright/test";
 import { BasePage } from "./base_page";
 
-export default class BSMPage extends BasePage {
+export default class MASPage extends BasePage {
   constructor(page) {
     super(page);
-    this.postNames = page.locator("//div[@class='packaged-img']//h6");
-    this.search_box = page.getByRole("textbox", { name: "Search BSM" });
+    this.postNames = page.locator("//div[@class='packaged-img']//h3");
+    this.search_box = page.getByRole("textbox", { name: "Search MAS" });
     this.search_button = page.getByRole("button", { name: "Search" });
-    this.addAProduct_button = page.locator(
-      "//button[contains(text(),'Add a Product')]",
+    this.addACompany_button = page.locator(
+      "//button[contains(text(),'Add Company')]",
     );
     this.allServicesBtn = page.locator("//a[text()='All Services']");
+    this.viewMore_button = page.locator("//button[text()='View more']");
+    this.informationTab = page.locator(".add-education-modal");
     this.recently_viewed_tab = page.locator(
       "//a[contains(text(),'Recently viewed')]",
     );
-    this.saved_posts_tab = page.locator("//a[contains(text(),'Saved Products')]");
+    this.saved_posts_tab = page.locator("//a[contains(text(),'Saved Companies')]");
     this.post_not_found = page.locator("//div[@class='content-loader']");
     this.pagination = page.locator("//ul[@class='pagination']/li/a");
-    this.industry_filter = page.locator(
-      "//div[contains(text(),'Search Here')]/parent::div/parent::div",
-    );
     this.country_filter = page.locator(
       "//div[contains(text(),'Search Country')]/parent::div/parent::div",
     );
     this.india_option = page.getByRole("option", { name: "India" , exact: true });
+    this.city_input = page.locator("//input[@placeholder='Search here']");
+    this.industry_filter = page.locator(
+      "//div[contains(text(),'Search Here')]/parent::div/parent::div",
+    );
     this.bussiness_option = page.getByRole("option", { name: "Business" });
-    this.category_filter = page.locator(
-      "//div[contains(text(),'Select Category')]/parent::div/parent::div",
-    );
-    this.subcategory_filter = page.locator(
-      "//div[contains(text(),'Search subcategories')]/parent::div/parent::div",
-    );
-    this.it_option = page.getByRole("option", { name: "Information technology" });
-    this.coding_option = page.getByRole("option", { name: "Coding" });
   }
-  async addAProduct() {
-    await this.addAProduct_button.click();
-  }
-
-  async clickOnAddAProductButton() {
-    await this.addAProduct_button.click();
+  async addACompany() {
+    await this.addACompany_button.click();
   }
 
   async goToAllServicesTab() {
@@ -49,7 +40,7 @@ export default class BSMPage extends BasePage {
   async waitForPosts() {
     await this.postNames.first().waitFor();
   }
-
+  
   async searchFor(text) {
     await this.search_box.fill(text);
     await this.search_button.click();
@@ -61,34 +52,24 @@ export default class BSMPage extends BasePage {
       .toBeLessThanOrEqual(1);
   }
 
-  async clickOnHeartButton(newPage) {
-    const postDetails = newPage.locator(
-      "//div[contains(@class,'package-right')]",
-    );
-    await postDetails.waitFor();
-    await newPage.locator(".heart-btn img").click();
-    await newPage.waitForTimeout(1000);
- }   
-
- async goToSavedPostsPage() {
-    await this.saved_posts_tab.click();
+  async clickOnViewMoreButton() {
+    await this.viewMore_button.click();
+    await expect(this.informationTab).toBeVisible();
   }
 
-  async goToTheFilteredPostetails() {
-    const [newPage] = await Promise.all([
-      this.page.context().waitForEvent("page"),
-      this.postNames.click(),
-    ]);
-    await newPage.waitForLoadState("networkidle");
-    return newPage;
-  }
-
-  async verifyPostDetailsIsVisible(newPage) {
-    const postDetails = newPage.locator(
-      "//div[contains(@class,'package-right')]",
+  async verifyPostDetailsIsVisible() {
+    const postDetails = this.informationTab.locator(
+      ".tab-content",
     );
     await postDetails.waitFor();
     await expect(postDetails).toBeVisible();
+  }
+
+  async closeInformationTab() {
+    const closebutton = this.informationTab.locator(
+      ".close-modal-btn img",
+    );
+    await closebutton.click();
   }
 
   async goToRecentlyReviewedPage() {
@@ -116,6 +97,21 @@ export default class BSMPage extends BasePage {
     return false;
   }
 
+  async clickOnHeartButton() {
+    const postDetails = this.informationTab.locator(
+      ".tab-content",
+    );
+    await postDetails.waitFor();
+    await this.page.waitForTimeout(1200);
+    const heartButton = await postDetails.locator(".heart-btn img");
+    await heartButton.click();
+    await this.page.waitForTimeout(1200);
+ }   
+
+ async goToSavedPostsPage() {
+    await this.saved_posts_tab.click();
+  }
+
   async waitForSavedPostToAppear() {
     await expect
       .poll(async () => await this.postNames.count())
@@ -131,6 +127,13 @@ export default class BSMPage extends BasePage {
     return await this.pagination.nth(totalCount - 2).textContent();
   }
 
+  async chooseCountryFilter() {
+    await this.country_filter.first().click();
+    await this.country_filter.first().locator("//input").fill("India");
+    await expect(this.india_option).toBeVisible();
+    await this.india_option.click();
+  }
+
   async getUpdatedPageNumber() {
     const before = await this.pagination.allTextContents();
     await expect(async () => {
@@ -142,29 +145,16 @@ export default class BSMPage extends BasePage {
     return newText?.trim();
   }
 
+  async enterCityName(city) {
+    await this.city_input.fill(city);
+    await this.page.waitForTimeout(2000);
+  }
+
   async chooseIndustryFilter() {
     await this.industry_filter.first().click();
     await expect(this.bussiness_option).toBeVisible();
     await this.bussiness_option.click();
   }
 
-  async chooseCountryFilter() {
-    await this.country_filter.first().click();
-    await this.country_filter.first().locator("//input").fill("India");
-    await expect(this.india_option).toBeVisible();
-    await this.india_option.click();
-  }
 
-  async chooseCategoryFilter() {
-    await this.category_filter.first().click();
-    await expect(this.it_option).toBeVisible();
-    await this.it_option.click();
-  }
-
-  async chooseSubCategoryFilter() {
-    await this.subcategory_filter.first().click();
-    await expect(this.coding_option).toBeVisible();
-    await this.coding_option.click();
-  }
-  
 }

@@ -1,13 +1,13 @@
-import { test, expect } from "../../fixtures/page.fixture.js";
-import PTJPage from "../../pages/part-time-job.page.js";
+import { test, expect } from "../../../fixtures/page.fixture.js";
+import PTJPage from "../../../pages/part-time-job.page.js";
 import { assert } from "node:console";
 import { describe } from "node:test";
-import credentials from "../../testData/credentials.json";
+import credentials from "../../../testData/credentials.json";
 import fs from "fs";
 import path from "path";
-import { pageRoutes, PTJPostName } from "../../testData/constants.js";
+import { pageRoutes, PTJPostName } from "../../../testData/constants.js";
 
-import { BasePage } from "../../pages/base_page.js";
+import { BasePage } from "../../../pages/base_page.js";
 test.describe.serial("PTJ Flow", () => {
   test("Create a post form validations", async ({
     userPage,

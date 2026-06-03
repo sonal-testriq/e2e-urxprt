@@ -1,28 +1,28 @@
-import { test, expect } from "../../fixtures/page.fixture.js";
+import { test, expect } from "../../../fixtures/page.fixture.js";
 
 
 test("TC_FTJ_001: FTJ account page is accessible after login and industries are displayed", async ({
-  companyHomePage,
-  companyPage,
-  companyFTJPage,
+  expertHomePage,
+  expertPage,
+  expertFTJPage,
 }) => {
-  await companyHomePage.goToFTJViaHeader();
-  await expect(companyPage).toHaveURL("https://urxprt.com/en/searchdownloadcv");
+  await expertHomePage.goToFTJViaHeader();
+  await expect(expertPage).toHaveURL("https://urxprt.com/en/searchdownloadcv");
   const expectedIndustries = ["E Commerce", "Energy", "Banking  Financial Institutions", "Corporate Legal Departments", "Legal", "Business", "Technology and Software", "Insurance and Financial Services"];
-  const industries = await companyFTJPage.getIndustriesList();
+  const industries = await expertFTJPage.getIndustriesList();
   for (const industry of expectedIndustries) {
     expect(industries).toContain(industry);
   }
 });
 
 test("TC_FTJ_002: Verify sub industries are displayed under each industry", async ({
-  companyHomePage,
-  companyPage,
-  companyFTJPage,
+  expertHomePage,
+  expertPage,
+  expertFTJPage,
 }) => {
-  await companyHomePage.goToFTJViaHeader();
-  await expect(companyPage).toHaveURL("https://urxprt.com/en/searchdownloadcv");
-  const industries = companyFTJPage.industries_list;
+  await expertHomePage.goToFTJViaHeader();
+  await expect(expertPage).toHaveURL("https://urxprt.com/en/searchdownloadcv");
+  const industries = expertFTJPage.industries_list;
   await expect(industries.first()).toBeVisible();
   const count = await industries.count();
   for (let i = 0; i < count; i++) {
@@ -30,20 +30,20 @@ test("TC_FTJ_002: Verify sub industries are displayed under each industry", asyn
     if (i !== 0) {
         await industry.click();
     }
-    const subIndustries = companyFTJPage.sub_industry_list;
+    const subIndustries = expertFTJPage.sub_industry_list;
     await expect(subIndustries.first()).toBeVisible();
     expect(await subIndustries.count()).toBeGreaterThan(0);
   }
 })
 
 test("TC_FTJ_003: Verify user is able to search sub industries", async ({
-  companyHomePage,
-  companyPage,
-  companyFTJPage,
+  expertHomePage,
+  expertPage,
+  expertFTJPage,
 }) => {
-    await companyHomePage.goToFTJViaHeader();
-    await expect(companyPage).toHaveURL("https://urxprt.com/en/searchdownloadcv");
-    const industries = companyFTJPage.industries_list;
+    await expertHomePage.goToFTJViaHeader();
+    await expect(expertPage).toHaveURL("https://urxprt.com/en/searchdownloadcv");
+    const industries = expertFTJPage.industries_list;
     await expect(industries.first()).toBeVisible();
     const industryCount = await industries.count();
     const allSubIndustries = [];
@@ -53,7 +53,7 @@ test("TC_FTJ_003: Verify user is able to search sub industries", async ({
         if (i !== 0) {
             await industry.click();
         }
-        const subIndustries = companyFTJPage.sub_industry_list_names;
+        const subIndustries = expertFTJPage.sub_industry_list_names;
         await expect(subIndustries.first()).toBeVisible();
         const subIndustryTexts = await subIndustries.allTextContents();
         const cleanedTexts = subIndustryTexts.map(text =>
@@ -69,39 +69,39 @@ test("TC_FTJ_003: Verify user is able to search sub industries", async ({
     Math.floor(Math.random() * uniqueSubIndustries.length)
     ];
     console.log("Random Sub Industry:", randomSubIndustry);
-    await companyFTJPage.searchFTJ(randomSubIndustry);
+    await expertFTJPage.searchFTJ(randomSubIndustry);
     const updatedIndustryCount = await industries.count();
     expect(updatedIndustryCount).not.toBe(industryCount);
 })
 
 test("TC_FTJ_004: Verify candidates are visible under sub industries", async ({
-  companyHomePage,
-  companyPage,
-  companyFTJPage,
+  expertHomePage,
+  expertPage,
+  expertFTJPage,
 }) => {
-    await companyHomePage.goToFTJViaHeader();
-    await expect(companyPage).toHaveURL("https://urxprt.com/en/searchdownloadcv");
-    await companyFTJPage.selectIndustryAndFirstSubIndustry("Business");
-    const candidateList = companyFTJPage.candidate_list;
+    await expertHomePage.goToFTJViaHeader();
+    await expect(expertPage).toHaveURL("https://urxprt.com/en/searchdownloadcv");
+    await expertFTJPage.selectIndustryAndFirstSubIndustry("Business");
+    const candidateList = expertFTJPage.candidate_list;
     await expect(candidateList.first()).toBeVisible();
     const count = await candidateList.count();
     expect(count).toBeGreaterThan(0);
 })   
 
 test("TC_FTJ_005: Verify that user can download the cv of the candidate", async ({
-  companyHomePage,
-  companyPage,
-  companyFTJPage,
+  expertHomePage,
+  expertPage,
+  expertFTJPage,
 }) => {
-    await companyHomePage.goToFTJViaHeader();
-    await expect(companyPage).toHaveURL("https://urxprt.com/en/searchdownloadcv");
-    await companyFTJPage.selectIndustryAndFirstSubIndustry("Business");
-    const candidateList = companyFTJPage.candidate_list;
+    await expertHomePage.goToFTJViaHeader();
+    await expect(expertPage).toHaveURL("https://urxprt.com/en/searchdownloadcv");
+    await expertFTJPage.selectIndustryAndFirstSubIndustry("Business");
+    const candidateList = expertFTJPage.candidate_list;
     await expect(candidateList.first()).toBeVisible();
     await candidateList.first().click();
     const [newPage] = await Promise.all([
-    companyPage.waitForEvent("popup"),
-    companyFTJPage.view_details_button.first().click(),
+    expertPage.waitForEvent("popup"),
+    expertFTJPage.view_details_button.first().click(),
     ]);
     await newPage.waitForLoadState();
     const downloadButton = newPage.getByRole("button", {

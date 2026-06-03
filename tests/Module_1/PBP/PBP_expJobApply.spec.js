@@ -1,6 +1,6 @@
-import { test, expect } from "../../fixtures/page.fixture.js";
-import { pageRoutes, PBPPostName } from "../../testData/constants.js";
-import { BasePage } from "../../pages/base_page.js";
+import { test, expect } from "../../../fixtures/page.fixture.js";
+import { pageRoutes, PBPPostName } from "../../../testData/constants.js";
+import { BasePage } from "../../../pages/base_page.js";
 
 test.describe.serial("PBP Flow", () => {
     test("TC_PBP_001: Verify create post from PBP page", async ({

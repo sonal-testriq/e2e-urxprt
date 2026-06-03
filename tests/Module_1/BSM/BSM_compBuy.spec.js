@@ -1,21 +1,21 @@
-import { test, expect } from "../../fixtures/page.fixture.js";
-import TAIPage from "../../pages/TAIPage.js";
+import { test, expect } from "../../../fixtures/page.fixture.js";
+import BSMPage from "../../../pages/BSMPage.js";
 import { assert } from "node:console";
 import { describe } from "node:test";
-import credentials from "../../testData/credentials.json";
+import credentials from "../../../testData/credentials.json";
 import fs from "fs";
 import path from "path";
-import { pageRoutes, TAIProductName } from "../../testData/constants.js";
+import { pageRoutes, BSMProductName } from "../../../testData/constants.js";
 
-import { BasePage } from "../../pages/base_page.js";
+import { BasePage } from "../../../pages/base_page.js";
 import { setEngine } from "node:crypto";
-test.describe.serial("TAI Flow", () => {
-  test("Adding a product by user at TAI", async ({
+test.describe.serial("PTJ Flow", () => {
+  test("Adding a product by user at BSM", async ({
     userPage,
     userHomePage,
-    userTAIPage,
+    userBSMPage,
   }) => {
-    await userHomePage.gotoTAIViaCard();
+    await userHomePage.gotoBSMViaCard();
     const addAProduct_button = userPage.locator(
       "//button[contains(text(),'Add a Product')]",
     );
@@ -31,30 +31,39 @@ test.describe.serial("TAI Flow", () => {
     const selectedIndustry = "Business";
     const selectedCategory = "Managing and Consultant";
     const selectedSubCategory = "Project Management";
+    const selectedPrice = "50";
+    const selectedCountry = "India";
+    const selectedCondition = "Brand new";
+    const selectedShips = "Not included";
     const description = "This is a test description for automation";
+    await userBSMPage.fillInput("Product title", BSMProductName);
+    const richTextEditor = userPage.locator(".ql-editor");
 
-    await userTAIPage.fillInput("Product name", TAIProductName);
+    // To fill
+    await richTextEditor.click();
+    await richTextEditor.fill(description);
 
-    await userTAIPage.selectDropdown("Industry *", selectedIndustry);
-    await userTAIPage.selectDropdown("Category *", selectedCategory);
-    await userTAIPage.selectDropdown("SubCategory", selectedSubCategory);
+    // To assert the value
+
+    await userBSMPage.selectDropdown("Industry *", selectedIndustry);
+    await userBSMPage.selectDropdown("Category *", selectedCategory);
+    await userBSMPage.selectDropdown("Sub Category", selectedSubCategory);
+    await userBSMPage.fillInput("Price * *", selectedPrice);
+    const nextBtn = userPage.locator("//button[contains(text(),'Next')]");
+    await nextBtn.click();
+    const productInfoTab = userPage.locator("a", {
+      hasText: "Product info",
+    });
+
+    await expect(productInfoTab).toHaveClass(/active nav-link/);
     const uploadedFile = await userPage
       .locator(".dropzone")
       .locator('input[type="file"]')
       .setInputFiles("testData/sampleImg.jpg");
-    await userTAIPage.fillRichTextEditor("Description", description);
-    await userPage.waitForTimeout(2000);
-    const nextBtn = userPage.getByRole("button", { name: "Next" });
-    await nextBtn.click();
-
-    const typeAndPricingTab = userPage.locator("a", {
-      hasText: " Type & Pricing",
-    });
-
-    await expect(typeAndPricingTab).toHaveClass(/active nav-link/);
-    await userTAIPage.setCheckbox("Rental only", true);
-    await userTAIPage.fillInputWithPlaceholder("Enter Price in $", "10");
-    await userTAIPage.selectDropdown("Price per", "Days");
+    await userPage.waitForTimeout(2000); // wait for upload to finish
+    await userBSMPage.selectDropdown("Country", selectedCountry);
+    await userBSMPage.selectRadioOption(selectedCondition);
+    await userBSMPage.selectRadioOption(selectedShips);
     await userPage
       .locator(".tab-pane.active")
       .locator("div.next-button")
@@ -63,6 +72,7 @@ test.describe.serial("TAI Flow", () => {
     const reviewTab = userPage.locator("a", {
       hasText: "Review & add",
     });
+
     await expect(reviewTab).toHaveClass(/active nav-link/);
     const getFieldValue = (label) =>
       userPage
@@ -73,25 +83,29 @@ test.describe.serial("TAI Flow", () => {
         .locator("h4");
 
     // Assert each field matches what was filled
-    await expect(getFieldValue("Product name")).toHaveText(TAIProductName);
-    await expect(getFieldValue("Industry")).toHaveText(selectedIndustry);
-    await expect(getFieldValue("Category")).toHaveText(selectedCategory);
-    await expect(getFieldValue("Sub category")).toHaveText(selectedSubCategory);
-
+    await expect(getFieldValue("Item Title")).toHaveText(BSMProductName);
+    await expect(getFieldValue("Industry")).toHaveText("Business");
+    await expect(getFieldValue("Category")).toHaveText(
+      "Managing and Consultant",
+    );
+    await expect(getFieldValue("Sub-Category")).toHaveText(
+      "Project Management",
+    );
+    await expect(getFieldValue("Product price")).toHaveText("$ 50");
     await expect(
       userPage
         .locator("div.price-duration")
         .filter({ has: userPage.locator(`h6:text-is("Description")`) })
         .locator("div.custom-html.truncate p"),
     ).toHaveText(description);
-
-    await expect(getFieldValue("Rental type")).toHaveText("Rental Only");
-    await expect(getFieldValue("Rental price")).toHaveText("$ 10/day");
-    // add more fields as needed...x
+    await expect(getFieldValue("Country")).toHaveText(selectedCountry);
+    await expect(getFieldValue("Product condition")).toHaveText("Brand New");
+    await expect(getFieldValue("Shipping charges")).toHaveText("Not Included");
+    // add more fields as needed...
 
     // ---------- PUBLISH ----------
     const publishBtn = userPage.getByRole("button", {
-      name: "Save and Publish",
+      name: "Add and Publish",
     });
     await expect(publishBtn).toBeVisible();
     await publishBtn.click();
@@ -100,114 +114,34 @@ test.describe.serial("TAI Flow", () => {
     await userPage.waitForLoadState("networkidle");
     await userPage.waitForTimeout(2000);
     await expect(
-      userPage.getByText("TAI Service Created Successfully"),
+      userPage.getByText("BSM Service Created Successfully"),
     ).toBeVisible();
+    // await expect(userPage).toHaveURL(/.*\/myotsproducts\//); // adjust to actual redirect URL
   });
-  test("Verify whether newly created TAI appears at the product listing page as 'Your Post'", async ({
-    userPage,
-    userHomePage,
-    userTAIPage,
-  }) => {
-    await userHomePage.gotoTAIViaCard();
-    await userPage.waitForLoadState("networkidle");
-    const TAIPostCard = userPage
-      .locator("div.packaged-img")
-      .filter({ has: userPage.locator("h6", { hasText: TAIProductName }) });
-    await expect(TAIPostCard).toHaveText(TAIProductName);
 
-    const yourPostTag = userPage.locator("div.post-sold p.your-postbtn", {
-      hasText: "Your post",
-    });
-    await expect(yourPostTag.first()).toBeVisible();
-  });
-  test("Verify whether newly created post appears at company's product listing page", async ({
+  test("Send request for buying product by company", async ({
     companyPage,
     companyHomePage,
-    companyTAIPage,
+    companyBSMPage,
   }) => {
-    await companyHomePage.gotoTAIViaCard();
-    const TAIPostCard = companyPage.locator("div.packaged-img").filter({
-      has: companyPage.locator("h6", { hasText: TAIProductName }),
+    await companyPage.goto(pageRoutes.account, { waitUntil: "networkidle" });
+
+    await companyHomePage.goToBSMViaHeader();
+    const BSMpost = await companyPage.locator("div.packaged-img").filter({
+      has: companyPage.locator(`h6:text-is("${BSMProductName}")`),
+      // has: companyPage.locator(`h6:text-is("Temp BSM post958")`),
     });
-    await expect(TAIPostCard).toHaveText(TAIProductName);
-  });
-  test("Verify if company can apply on new created post", async ({
-    companyPage,
-    companyHomePage,
-    companyTAIPage,
-  }) => {
-    await companyHomePage.gotoTAIViaCard();
-    const TAIPostCard = companyPage.locator("div.packaged-img").filter({
-      has: companyPage.locator("h6", { hasText: TAIProductName }),
-    });
-    //await TAIPostCard.click();
+
     const [newPage] = await Promise.all([
       companyPage.context().waitForEvent("page"),
-      TAIPostCard.click(),
+      BSMpost.click(),
     ]);
-
     await newPage.waitForLoadState();
 
     const newPageObject = new BasePage(newPage);
-    await newPage
-      .locator("//button[contains(text(),'Send Rental Request')]")
-      .click();
+    await newPage.locator("//button[contains(text(),'Send request')]").click();
     await newPage.waitForLoadState("networkidle");
-
-    await expect(newPage.locator("div.modal.fade.show")).toBeVisible();
-    await newPageObject.fillInput("Start Date ", "2026-05-30");
-    await newPageObject.fillInput("End Date ", "2026-05-31");
-    await newPage
-      .locator(".form-group")
-      .filter({ hasText: "Start Time" })
-      .locator(".rs-picker-toggle-wrapper")
-      .click();
-
-    const startPopup = newPage.locator(".rs-picker-popup-date").last();
-    await expect(startPopup).toBeVisible();
-
-    const startHour = startPopup.locator('[data-key="hours-10"]');
-    await startHour.scrollIntoViewIfNeeded();
-    await startHour.click();
-
-    const startMinute = startPopup.locator('[data-key="minutes-30"]');
-    await startMinute.scrollIntoViewIfNeeded();
-    await startMinute.click();
-
-    await startPopup.getByRole("option", { name: "AM" }).click();
-    await startPopup.getByRole("button", { name: "OK" }).click();
-
-    // Wait for start popup to fully close before opening end picker
-    await expect(startPopup).toBeHidden();
-
-    // ---------- END TIME ----------
-    await newPage
-      .locator(".form-group")
-      .filter({ hasText: "End Time" })
-      .locator(".rs-picker-toggle-wrapper")
-      .click();
-
-    const endPopup = newPage.locator(".rs-picker-popup-date").last();
-    await expect(endPopup).toBeVisible();
-
-    const endHour = endPopup.locator('[data-key="hours-6"]');
-    await endHour.scrollIntoViewIfNeeded();
-    await endHour.click();
-
-    const endMinute = endPopup.locator('[data-key="minutes-30"]');
-    await endMinute.scrollIntoViewIfNeeded();
-    await endMinute.click();
-
-    await endPopup.getByRole("option", { name: "PM" }).click();
-    await endPopup.getByRole("button", { name: "OK" }).click();
-
-    await expect(endPopup).toBeHidden();
-    await newPage.waitForTimeout(2000);
-    await newPage
-      .locator("//button[contains(text(),'Submit Request')]")
-      .click();
-    await newPage.waitForTimeout(2000);
-    expect(newPage.url()).toContain("https://urxprt.com/en/rentalcontract/");
+    expect(newPage.url()).toContain("https://urxprt.com/en/salecontract/");
 
     await newPage.locator("label[for='agree']").click();
 
@@ -230,37 +164,38 @@ test.describe.serial("TAI Flow", () => {
       hasText: "Accept",
     });
     await acceptTermsButton.click();
-    await newPage.waitForTimeout(10000);
-    expect(newPage.getByText("TAI Request Has Been Sent")).toBeVisible();
+    await newPage.waitForTimeout(5000);
+    expect(newPage.getByText("BSM Request Has Been Sent")).toBeVisible();
     // expect(company);
     expect(
-      newPage.locator("//button[contains(text(),'Request Sent')]"),
+      newPage.locator("//button[contains(text(),'Request pending')]"),
     ).toBeDisabled();
     await newPage.waitForTimeout(2000);
   });
-  test("Accepting TAI request by the 'User'", async ({
+
+  test("Accepting BSM request by the 'User'", async ({
     userPage,
     userHomePage,
-    userTAIPage,
+    userBSMPage,
   }) => {
     await userPage.goto(pageRoutes.account, { waitUntil: "networkidle" });
     await userHomePage.gotoDashboardPage();
     await userHomePage.gotoReceivedOrders();
-    const taiRequestsHeader = userPage
+    const bsmRequestsHeader = userPage
       .locator("#Orderequests")
       .locator(".pending-req h4", {
-        hasText: "Turn Assets to Income (TAI) requests",
+        hasText: "Buy & Sell with Market (BSM) requests",
       });
 
-    await expect(taiRequestsHeader).toBeVisible();
+    await expect(bsmRequestsHeader).toBeVisible();
     const postRow = userPage.locator("div.pending-img", {
-      hasText: TAIProductName,
+      hasText: BSMProductName,
     });
 
     await postRow.getByRole("button", { name: "Accept" }).click();
     await userPage.waitForTimeout(2000);
 
-    expect(userPage.url()).toContain("https://urxprt.com/en/rentalcontract/");
+    expect(userPage.url()).toContain("https://urxprt.com/en/salecontract/");
 
     await userPage.locator("label[for='agree']").click();
 
@@ -283,13 +218,13 @@ test.describe.serial("TAI Flow", () => {
       hasText: "Accept",
     });
     await acceptTermsButton.click();
-    await userPage.waitForTimeout(10000);
+    await userPage.waitForTimeout(5000);
   });
 
   test("Paying for product by company(Buyer)  ", async ({
     companyPage,
     companyHomePage,
-    companyTAIPage,
+    companyBSMPage,
   }) => {
     await companyPage.goto(`/en/dashboard/myorders`, {
       waitUntil: "networkidle",
@@ -306,26 +241,26 @@ test.describe.serial("TAI Flow", () => {
     });
     await activeTab.click();
     const postRow = companyPage.locator("div.pending-img", {
-      hasText: TAIProductName,
+      hasText: BSMProductName,
     });
     await postRow.locator("button.btn-img").click();
     await companyPage.waitForTimeout(2000);
 
     await expect(companyPage).toHaveURL(
-      /.*\/myorders\/rentalproductsdetails\//,
+      /.*\/myorders\/productforsaledetails\//,
     );
     const payNowBtn = companyPage.locator("div.status-right span", {
       hasText: "Pay Now",
     });
     await payNowBtn.click();
     await companyPage.waitForTimeout(2000);
-    await expect(companyPage.locator("div.modal.fade.show")).toBeVisible();
+    expect(companyPage.locator("div.modal.fade.show")).toBeVisible();
     const confirmBtn = companyPage.locator("div.modal-content button", {
       hasText: "Confirm",
     });
     await confirmBtn.click();
     await companyPage.waitForTimeout(2000);
-    await expect(companyPage).toHaveURL(
+    expect(companyPage).toHaveURL(
       "https://urxprt.com/en/account/paymentmethodpage",
     );
     const makePayment = companyPage.locator("button", {
@@ -362,7 +297,7 @@ test.describe.serial("TAI Flow", () => {
     // Click payment submit and wait for redirect
     await Promise.all([
       companyPage.waitForURL("**oppwa.com/**"),
-      companyPage
+      await companyPage
         .getByRole("button", {
           name: "Pay now",
         })
@@ -374,20 +309,36 @@ test.describe.serial("TAI Flow", () => {
     await payBtn.click();
     await companyPage.waitForTimeout(3000);
     await expect(
-      companyPage.getByText("TAI Payment Completed").first(),
+      companyPage.getByText("BSM Payment Completed").first(),
     ).toBeVisible();
     const okayBtn = companyPage.locator("button", { hasText: "Okay" });
     await okayBtn.click();
     await companyPage.waitForTimeout(5000);
 
     await expect(companyPage).toHaveURL(
-      /.*\/receivedorders\/rentalproductsdetails\//,
+      /.*\/receivedorders\/productforsaledetails\//,
     );
+    const addAddressBtn = companyPage.locator("div.status-right span", {
+      hasText: "Add Address",
+    });
+    await addAddressBtn.click();
+    await companyPage.waitForTimeout(2000);
+    expect(companyPage.locator("div.modal.fade.show")).toBeVisible();
+
+    await companyBSMPage.fillInputWithPlaceholder(
+      "Enter address",
+      "Mumbai, Maharashtra",
+    );
+    const submitBtn = companyPage.locator("div.modal-content button", {
+      hasText: "Submit",
+    });
+    await submitBtn.click();
   });
-  test("Updating product status by user(seller)", async ({
+
+  test("Updating product to 'Out for Delivery' by user(seller)", async ({
     userPage,
     userHomePage,
-    userTAIPage,
+    userBSMPage,
   }) => {
     await userPage.goto(pageRoutes.account, { waitUntil: "networkidle" });
     await userHomePage.gotoDashboardPage();
@@ -398,26 +349,26 @@ test.describe.serial("TAI Flow", () => {
     });
     await activeOrders.click();
 
-    const TAIOrders = userPage.locator("#Activeorders .order-tabs a", {
-      hasText: "Turn Assets to Income (TAI)",
+    const BSMOrders = userPage.locator("#Activeorders .order-tabs a", {
+      hasText: "Buy & Sell with Market (BSM)",
       exact: false,
     });
 
-    await TAIOrders.click();
+    await BSMOrders.click();
     const postRow = userPage.locator("div.pending-img", {
-      hasText: TAIProductName,
+      hasText: BSMProductName,
     });
 
     await postRow.locator("button.btn-img").click();
     await userPage.waitForTimeout(2000);
 
     await expect(userPage).toHaveURL(
-      /.*\/receivedorders\/rentalproductsdetails\//,
+      /.*\/receivedorders\/productforsaledetails\//,
     );
-    const updateStatusBtn = userPage.locator("div.status-right span", {
-      hasText: "Update status",
+    const updateDeliveryBtn = userPage.locator("div.status-right span", {
+      hasText: "Update Out for Delivery",
     });
-    await updateStatusBtn.click();
+    await updateDeliveryBtn.click();
     await userPage.waitForTimeout(2000);
     expect(userPage.locator("div.modal.fade.show")).toBeVisible();
     const confirmBtn = userPage.locator("div.modal-content button", {
@@ -427,10 +378,11 @@ test.describe.serial("TAI Flow", () => {
     await userPage.waitForTimeout(2000);
     await expect(userPage.getByText("Updated Successfully")).toBeVisible();
   });
+
   test("Marking product 'Deleivered' by company(Buyer)", async ({
     companyPage,
     companyHomePage,
-    companyTAIPage,
+    companyBSMPage,
   }) => {
     await companyPage.goto(`/en/dashboard/myorders`, {
       waitUntil: "networkidle",
@@ -447,13 +399,13 @@ test.describe.serial("TAI Flow", () => {
     });
     await activeTab.click();
     const postRow = companyPage.locator("div.pending-img", {
-      hasText: TAIProductName,
+      hasText: BSMProductName,
     });
     await postRow.locator("button.btn-img").click();
     await companyPage.waitForTimeout(2000);
-    // ✅ Fix for companyPage as well
+
     await expect(companyPage).toHaveURL(
-      /.*\/myorders\/rentalproductsdetails\//,
+      /.*\/myorders\/productforsaledetails\//,
     );
     const DeliveredBtn = companyPage.locator("div.status-right span", {
       hasText: "Mark Delivered",
@@ -470,19 +422,20 @@ test.describe.serial("TAI Flow", () => {
     await companyPage.waitForTimeout(2000);
     // Assert step 4 "Item Delivered" is active/complete
     const step4 = companyPage.locator("div.status-first").filter({
-      has: companyPage.locator("h6", { hasText: "Delivered" }),
+      has: companyPage.locator("h6", { hasText: "Item Delivered" }),
     });
 
     // Assert the number circle is marked complete
     await expect(step4.locator("div.number.complete span")).toHaveText("4");
 
     // Assert OTP is generated and visible
-    await expect(companyPage.locator("div.deliveryotp-sec")).toBeVisible();
+    await expect(step4.locator("div.deliveryotp-sec")).toBeVisible();
   });
+
   test("Completing transaction by user(Seller) by verifying OTP", async ({
     userPage,
     userHomePage,
-    userTAIPage,
+    userBSMPage,
   }) => {
     await userPage.goto(pageRoutes.account, { waitUntil: "networkidle" });
     await userHomePage.gotoDashboardPage();
@@ -493,22 +446,21 @@ test.describe.serial("TAI Flow", () => {
     });
     await activeOrders.click();
 
-    const TAIOrders = userPage.locator("#Activeorders .order-tabs a", {
-      hasText: "Turn Assets to Income (TAI)",
+    const BSMOrders = userPage.locator("#Activeorders .order-tabs a", {
+      hasText: "Buy & Sell with Market (BSM)",
       exact: false,
     });
-    ``;
 
-    await TAIOrders.click();
+    await BSMOrders.click();
     const postRow = userPage.locator("div.pending-img", {
-      hasText: TAIProductName,
+      hasText: BSMProductName,
     });
 
     await postRow.locator("button.btn-img").click();
     await userPage.waitForTimeout(2000);
 
     await expect(userPage).toHaveURL(
-      /.*\/receivedorders\/rentalproductsdetails\//,
+      /.*\/receivedorders\/productforsaledetails\//,
     );
     await userPage.locator("input[name= 'otp']").fill("123456");
     await userPage.locator("button", { hasText: "Submit" }).click();
@@ -523,11 +475,15 @@ test.describe.serial("TAI Flow", () => {
     const step5 = userPage.locator("div.status-first").filter({
       has: userPage.locator("h6", { hasText: "Transaction Complete" }),
     });
+
+    // Assert the number circle is marked complete
+    await expect(step5.locator("div.number.complete span")).toHaveText("5");
   });
+
   test("Asserting completion of last step of Completing transaction at company's(buyer) window", async ({
     companyPage,
     companyHomePage,
-    companyTAIPage,
+    companyBSMPage,
   }) => {
     await companyPage.goto(`/en/dashboard/myorders`, {
       waitUntil: "networkidle",
@@ -538,26 +494,29 @@ test.describe.serial("TAI Flow", () => {
 
     await completedOrdersTab.click();
 
-    const TAIOrders = companyPage.locator("#MyOrderCompleted .order-tabs a", {
-      hasText: "Turn Assets to Income (TAI)",
+    const BSMOrders = companyPage.locator("#MyOrderCompleted .order-tabs a", {
+      hasText: "Buy & Sell with Market (BSM)",
       exact: false,
     });
 
-    await TAIOrders.click();
+    await BSMOrders.click();
     const postRow = companyPage.locator("div.pending-img", {
-      hasText: TAIProductName,
+      hasText: BSMProductName,
     });
     await postRow.locator("button.btn-img").click();
     await companyPage.waitForTimeout(2000);
     // ✅ Fix for companyPage as well
     await expect(companyPage).toHaveURL(
-      /.*\/myorders\/rentalproductsdetails\//,
+      /.*\/receivedorders\/productforsaledetails\//,
     );
     const step5 = companyPage.locator("div.status-first").filter({
       has: companyPage.locator("h6", { hasText: "Transaction Complete" }),
     });
+
+    // Assert the number circle is marked complete
     await expect(step5.locator("div.number.complete span")).toHaveText("5");
   });
+
   test("Asserting completion of last step of Completing transaction at user's(seller) window and relisting of product", async ({
     userPage,
     userHomePage,
@@ -572,18 +531,37 @@ test.describe.serial("TAI Flow", () => {
     });
     await completedOrders.click();
 
-    const TAIOrders = userPage.locator(".completed-tab-sec a", {
-      hasText: "Turn Assets to Income (TAI)",
+    const BSMOrders = userPage.locator(".completed-tab-sec a", {
+      hasText: "Buy & Sell with Market (BSM)",
       exact: false,
     });
 
-    await TAIOrders.click();
+    await BSMOrders.click();
 
     const postRow = userPage.locator("div.pending-img", {
-      hasText: TAIProductName,
+      hasText: BSMProductName,
     });
 
     // Then assert only the h5 within that row
-    await expect(postRow.locator("h5").first()).toHaveText(TAIProductName);
+    await expect(postRow.locator("h5").first()).toHaveText(BSMProductName);
+
+    const relistBtn = postRow.locator("button", { hasText: "Re-list" });
+    await relistBtn.click();
+
+    await expect(
+      userPage.getByText("BSM Service Created Successfully"),
+    ).toBeVisible();
+    await userHomePage.gotoHomepage();
+    userHomePage.gotoBSMViaCard();
+    // Assert the specific product is listed on the BSM page
+    const productCard = userPage.locator("div.packaged-img", {
+      hasText: BSMProductName, // "Temp BSM post310"
+    });
+
+    await expect(productCard).toBeVisible();
+
+    // Optionally, assert the exact title text
+    await expect(productCard.locator("h6")).toHaveText(BSMProductName);
   });
+  
 });

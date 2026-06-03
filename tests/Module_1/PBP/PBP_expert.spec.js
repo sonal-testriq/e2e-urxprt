@@ -1,5 +1,5 @@
-import { test, expect } from "../../fixtures/page.fixture.js";
-import { pageRoutes, PBPPostName } from "../../testData/constants.js";
+import { test, expect } from "../../../fixtures/page.fixture.js";
+import { pageRoutes, PBPPostName } from "../../../testData/constants.js";
 
 test("TC_PBP_001: PBP account page is accessible after login", async ({
   expertHomePage,

@@ -1,5 +1,5 @@
-import { test, expect } from "../../fixtures/page.fixture.js";
-import { pageRoutes, PTJPost_Name } from "../../testData/constants.js";
+import { test, expect } from "../../../fixtures/page.fixture.js";
+import { pageRoutes, PTJPost_Name } from "../../../testData/constants.js";
 
 
 test("TC_PTJ_001: PTJ account page is accessible after login", async ({

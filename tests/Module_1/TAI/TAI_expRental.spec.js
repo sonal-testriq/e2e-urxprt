@@ -1,13 +1,13 @@
-import { test, expect } from "../../fixtures/page.fixture.js";
-import TAIPage from "../../pages/TAIPage.js";
+import { test, expect } from "../../../fixtures/page.fixture.js";
+import TAIPage from "../../../pages/TAIPage.js";
 import { assert } from "node:console";
 import { describe } from "node:test";
-import credentials from "../../testData/credentials.json";
+import credentials from "../../../testData/credentials.json";
 import fs from "fs";
 import path from "path";
-import { pageRoutes, TAIProductName } from "../../testData/constants.js";
+import { pageRoutes, TAIProductName } from "../../../testData/constants.js";
 
-import { BasePage } from "../../pages/base_page.js";
+import { BasePage } from "../../../pages/base_page.js";
 import { setEngine } from "node:crypto";
 test.describe.serial("TAI Flow", () => {
   test("Adding a product by user at TAI", async ({
