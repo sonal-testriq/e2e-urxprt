@@ -1,4 +1,5 @@
 import { test, expect } from "../../../fixtures/page.fixture";
+import { pageRoutes, OTS_ServiceName } from "../../../testData/constants.js";
 
 test("TC_OTS_001: OTS page is accessible after login", async ({
   expertPage,
@@ -123,3 +124,106 @@ test("TC_OTS_006: Apply multiple filters and verify counts update correctly", as
   expect(updatedPostCount).toBeLessThan(postCount);
 });
 
+test.describe.serial("OTS Tests for Expert Role", () => {
+  test("TC_OTS_007: Verify Expert user is able to add a service", async ({
+    expertPage,
+    expertHomePage,
+    expertOTSPage,
+  }) => {
+    await expertHomePage.gotoOSMViaCard();
+    await expertOTSPage.clickOnCreateAPostButton();
+    await expect(expertPage).toHaveURL(/.*\/myotsproducts/);
+    await expertOTSPage.clickOnAddButtonOnAllServicesPage();
+    await expertPage.waitForTimeout(500);
+    await expertOTSPage.fillInput("Service Title ", OTS_ServiceName);
+    await expertPage.locator('input[type="file"]').setInputFiles('testData/sampleImg.jpg');
+    await expect(expertPage.locator("//img[@alt='Delete']")).toBeVisible();
+    await expertOTSPage.fillRichTextEditor("Description", "This is a sample description for the OTS service.");
+    await expertOTSPage.selectMultiDropdown("Industry *", ["E Commerce"]);
+    await expertOTSPage.selectMultiDropdown("Category *", ["Supply Chain"]);
+    await expertOTSPage.fillInput("No of Days", "10");
+    await expertOTSPage.fillRichTextEditor("Requirements", "This is a sample requirements for the OTS service.");
+    await expertPage.waitForTimeout(500);
+    await expertOTSPage.clickOnNextButtonOnServiceDetailsTab();
+    await expertPage.waitForTimeout(500);
+    await expertOTSPage.clickOnNextButtonOnWorkSampleTab();
+    await expertPage.waitForTimeout(500);
+    await expertOTSPage.fillInput("Price in $ *", "10");
+    await expertOTSPage.selectPaymentTerms("One time");
+    await expertOTSPage.fillRichTextEditor("Additional Notes / Terms", "This is a sample requirements for the OTS service.");
+    await expertPage.waitForTimeout(500);
+    await expertOTSPage.saveAndPublishService();
+    await expertOTSPage.verifySuccessMessageIsDisplayed("OTS service created successfully");
+  })
+
+  test("TC_OTS_008: Verify Expert user is able to view created service in All Services", async ({
+    expertPage,
+    expertHomePage,
+    expertOTSPage,
+  }) => {
+    await expertHomePage.gotoOSMViaCard();
+    await expertOTSPage.clickOnCreateAPostButton();
+    await expect(expertPage).toHaveURL(/.*\/myotsproducts/);
+    await expertHomePage.selectServices("OTS");
+    await expertOTSPage.isServicePresent(OTS_ServiceName)
+  })
+
+  test("TC_OTS_009: Verify Expert user is able to edit the create service", async ({
+    expertPage,
+    expertHomePage,
+    expertOTSPage,
+  }) => {
+    await expertHomePage.gotoOSMViaCard();
+    await expertOTSPage.clickOnCreateAPostButton();
+    await expect(expertPage).toHaveURL(/.*\/myotsproducts/);
+    await expertHomePage.selectServices("OTS");
+    await expertOTSPage.clickOnEditButton(OTS_ServiceName)
+    await expertPage.waitForTimeout(500);
+    await expertOTSPage.fillInput("Service Title ", OTS_ServiceName + " Updated");
+    await expertOTSPage.clickOnNextButtonOnServiceDetailsTab();
+    await expertOTSPage.clickOnNextButtonOnWorkSampleTab();
+    await expertOTSPage.saveAndPublishService();
+    await expertOTSPage.verifySuccessMessageIsDisplayed("OTS service updated successfully");
+    await expertOTSPage.isServicePresent(OTS_ServiceName + " Updated")
+    await expertOTSPage.clickOnEditButton(OTS_ServiceName + " Updated")
+    await expertPage.waitForTimeout(500);
+    await expertOTSPage.fillInput("Service Title ", OTS_ServiceName);
+    await expertOTSPage.clickOnNextButtonOnServiceDetailsTab();
+    await expertOTSPage.clickOnNextButtonOnWorkSampleTab();
+    await expertOTSPage.saveAndPublishService();
+    await expertOTSPage.verifySuccessMessageIsDisplayed("OTS service updated successfully");
+    await expertOTSPage.isServicePresent(OTS_ServiceName)
+  })
+
+  test("TC_OTS_010: Verify Expert user is able to cancel the edit", async ({
+    expertPage,
+    expertHomePage,
+    expertOTSPage,
+  }) => {
+    await expertHomePage.gotoOSMViaCard();
+    await expertOTSPage.clickOnCreateAPostButton();
+    await expect(expertPage).toHaveURL(/.*\/myotsproducts/);
+    await expertHomePage.selectServices("OTS");
+    await expertOTSPage.clickOnEditButton(OTS_ServiceName)
+    await expertPage.waitForTimeout(500);
+    await expertOTSPage.closeAddServicesTab();
+    await expertOTSPage.verifyConfirmationPopupIsPresent("You have unsaved changes. Are you sure you want to cancel?")
+    await expertOTSPage.clickOnYesButton();
+  })
+
+  test("TC_OTS_011: Verify Expert user is able to delete the create service", async ({
+    expertPage,
+    expertHomePage,
+    expertOTSPage,
+  }) => {
+    await expertHomePage.gotoOSMViaCard();
+    await expertOTSPage.clickOnCreateAPostButton();
+    await expect(expertPage).toHaveURL(/.*\/myotsproducts/);
+    await expertHomePage.selectServices("OTS");
+    await expertOTSPage.clickOnDeleteButton(OTS_ServiceName)
+    await expertOTSPage.verifyConfirmationPopupIsPresent("Confirm Delete")
+    await expertOTSPage.clickOnConfirmButton();
+    await expertOTSPage.verifySuccessMessageIsDisplayed("Your OTS service has been deleted");
+  })
+
+})

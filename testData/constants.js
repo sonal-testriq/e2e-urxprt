@@ -38,3 +38,4 @@ export const BSMProductName = "Temp BSM post" + "_" + getRandomNumber();
 export const PBPPostName = "PBP Post Automation" + "_" + getRandomNumber();
 export const WBOPostName = "WBO Post Automation" + "_" + getRandomNumber();
 export const PTJPost_Name = "PTJ Post Automation";
+export const OTS_ServiceName = "OTS Service Post" + " " + getRandomNumber();

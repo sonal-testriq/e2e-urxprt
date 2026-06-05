@@ -51,6 +51,7 @@ export class BasePage {
     const inputField = this.page
       .getByText(label)
       .locator("xpath=following::input[1]");
+    await inputField.clear();
     await inputField.fill(value);
   }
 
@@ -71,8 +72,7 @@ export class BasePage {
     await this.page.keyboard.press("Backspace");
 
     await this.page.keyboard.type(text);
-
-    await expect(editor).toContainText(text);
+    await expect(editor.first()).toContainText(text);
   }
 
   async selectMultiDropdown(label, options) {

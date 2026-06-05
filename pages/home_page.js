@@ -103,6 +103,7 @@ export default class HomePage extends BasePage {
     this.dashboard_button = page.locator("//a[contains(text(),'Dashboard')]");
     this.preview_button = page.getByRole('button', { name: 'preview' });
     this.my_orders_button = page.getByText('My Orders');
+    this.recieved_orders_button = page.locator("//a[.='Received Orders']");
     this.pbp_orders = page.locator("//div[@id='MyOrderPostedorders']//a[contains(text(),'Post & Browse Project')]");
     this.wbo_orders = page.locator("//div[@id='MyOrderPostedorders']//a[contains(text(),'Win business Opportunities')]");
     this.ptj_orders = page.locator("//div[@id='MyOrderPostedorders']//a[contains(text(),'Part time Job')]");
@@ -110,6 +111,8 @@ export default class HomePage extends BasePage {
     this.post_contest_name_in_pending_payment_contest = page.locator("(//h4[contains(text(),'Payment Pending Contest')]/parent::div/following-sibling::div)[1]//h3");
     this.post_contest_name_in_all_active_wbo = page.locator("(//h4[contains(text(),'All Active Win business Opportunities')]/parent::div/following-sibling::div)[1]//h3");
     this.post_job_name_in_part_time_job = page.locator("(//h4[contains(text(),'Posted Part time Job')]/parent::div/following-sibling::div)[1]//h1/parent::div//h3")
+    this.purchase_order = page.locator("//a[contains(.,'Purchased orders')]");
+    this.active_order = page.locator("//a[contains(.,'Active orders')]");
   } 
 
   async navigateToPartTimeJobsFromHomepage() {
@@ -379,6 +382,10 @@ export default class HomePage extends BasePage {
     await this.my_orders_button.first().click();
   }
 
+  async navigateToRecievedOrders() {
+    await this.recieved_orders_button.first().click();
+  }
+
   async openPBPPostFromMyOrders() {
     await this.pbp_orders.first().click();
   }
@@ -389,6 +396,16 @@ export default class HomePage extends BasePage {
 
   async openPTJPostFromMyOrders() {
     await this.ptj_orders.first().click();
+  }
+
+  async selectServices(service) {
+    const services = await this.page.locator("//h2[.='All Services']/parent::div/ul/li/a[contains(.,'"+ service +"')]");
+    await services.click();
+  }
+
+  async goToActivePurchaseOrder() {
+    await this.purchase_order.click();
+    await this.active_order.click();
   }
 
 }
