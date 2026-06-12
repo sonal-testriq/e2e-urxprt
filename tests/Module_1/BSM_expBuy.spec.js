@@ -9,7 +9,7 @@ import { pageRoutes, BSMProductName } from "../../testData/constants.js";
 
 import { BasePage } from "../../pages/base_page.js";
 import { setEngine } from "node:crypto";
-test.describe.serial("PTJ Flow", () => {
+test.describe.serial("BSM Flow", () => {
   test.only("Adding a product by user at BSM", async ({
     userPage,
     userHomePage,

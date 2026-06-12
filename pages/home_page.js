@@ -14,8 +14,8 @@ export default class HomePage extends BasePage {
       .locator("a:has-text('Find Post & Browse Projects (PBP)')");
 
     this.wbo_link_on_homepage = page
-    .locator(".welcomepage")
-    .locator("a:has-text('Explore Win business Opportunities (WBO)')");
+      .locator(".welcomepage")
+      .locator("a:has-text('Explore Win business Opportunities (WBO)')");
 
     this.BSM_link_on_homepage = page
       .locator(".welcomepage")
@@ -46,6 +46,9 @@ export default class HomePage extends BasePage {
     this.TAI_link_in_dropdown = this.OTS_dropdown.locator(
       "//a[contains(text(),'TAI')]",
     );
+    this.MAS_link_in_dropdown = this.OTS_dropdown.locator(
+      "//a[contains(text(),'MAS')]",
+    );
     this.find_expert_tab = page.locator(
       "//li/a[contains(text(),'Find Experts')]",
     );
@@ -66,16 +69,31 @@ export default class HomePage extends BasePage {
       "//div[contains(@class,'mobile-menu-header')]",
     );
     this.dashboard_button = page.locator("//a[contains(text(),'Dashboard')]");
-    this.preview_button = page.getByRole('button', { name: 'preview' });
-    this.my_orders_button = page.getByText('My Orders');
-    this.pbp_orders = page.locator("//div[@id='MyOrderPostedorders']//a[contains(text(),'Post & Browse Project')]");
-    this.wbo_orders = page.locator("//div[@id='MyOrderPostedorders']//a[contains(text(),'Win business Opportunities')]");
-    this.ptj_orders = page.locator("//div[@id='MyOrderPostedorders']//a[contains(text(),'Part time Job')]");
-    this.postNamesOnMyOrders = page.locator("//h4[contains(text(),'Posted Post')]/parent::div/following-sibling::div//h3");
-    this.post_contest_name_in_pending_payment_contest = page.locator("(//h4[contains(text(),'Payment Pending Contest')]/parent::div/following-sibling::div)[1]//h3");
-    this.post_contest_name_in_all_active_wbo = page.locator("(//h4[contains(text(),'All Active Win business Opportunities')]/parent::div/following-sibling::div)[1]//h3");
-    this.post_job_name_in_part_time_job = page.locator("(//h4[contains(text(),'Posted Part time Job')]/parent::div/following-sibling::div)[1]//h1/parent::div//h3")
-  } 
+    this.preview_button = page.getByRole("button", { name: "preview" });
+    this.my_orders_button = page.getByText("My Orders");
+    this.pbp_orders = page.locator(
+      "//div[@id='MyOrderPostedorders']//a[contains(text(),'Post & Browse Project')]",
+    );
+    this.wbo_orders = page.locator(
+      "//div[@id='MyOrderPostedorders']//a[contains(text(),'Win business Opportunities')]",
+    );
+    this.ptj_orders = page.locator(
+      "//div[@id='MyOrderPostedorders']//a[contains(text(),'Part time Job')]",
+    );
+    this.postNamesOnMyOrders = page.locator(
+      "//h4[contains(text(),'Posted Post')]/parent::div/following-sibling::div//h3",
+    );
+    this.post_contest_name_in_pending_payment_contest = page.locator(
+      "(//h4[contains(text(),'Payment Pending Contest')]/parent::div/following-sibling::div)[1]//h3",
+    );
+    this.post_contest_name_in_all_active_wbo = page.locator(
+      "(//h4[contains(text(),'All Active Win business Opportunities')]/parent::div/following-sibling::div)[1]//h3",
+    );
+    this.post_job_name_in_part_time_job = page.locator(
+      "(//h4[contains(text(),'Posted Part time Job')]/parent::div/following-sibling::div)[1]//h1/parent::div//h3",
+    );
+    this.notification_icon = page.locator('img[src*="bell.svg"]');
+  }
 
   async navigateToPartTimeJobsFromHomepage() {
     await this.ptj_link_on_homepage.click();
@@ -91,16 +109,19 @@ export default class HomePage extends BasePage {
     await expect(this.pbp_link_in_dropdown).toBeVisible();
     await this.pbp_link_in_dropdown.click();
   }
+  async hoverOverNotifivationIcon() {
+    await this.notification_icon.click();
+  }
 
   async gotoPTJViaCard() {
-    await this.page.goto(pageRoutes.account, { waitUntil: "domcontentloaded" });
+    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
     await this.ptj_link_on_homepage.click();
     await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=3");
     await this.page.waitForLoadState("networkidle");
   }
 
   async gotoPBPViaCard() {
-    await this.page.goto(pageRoutes.account, { waitUntil: "domcontentloaded" });
+    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
     await this.pbp_link_on_homepage.click(); // Assuming same link or adjust
     await expect(this.page).toHaveURL("https://urxprt.com/en/searchall?type=1"); // Assuming PBP type=1
     await this.page.waitForLoadState("networkidle");
@@ -114,7 +135,7 @@ export default class HomePage extends BasePage {
   }
 
   async gotoBSMViaCard() {
-    await this.page.goto(pageRoutes.account, { waitUntil: "domcontentloaded" });
+    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
     await this.BSM_link_on_homepage.click();
     await expect(this.page).toHaveURL(
       "https://urxprt.com/en/searchbuyproducts",
@@ -122,14 +143,21 @@ export default class HomePage extends BasePage {
     await this.page.waitForLoadState("networkidle");
   }
   async gotoTAIViaCard() {
-    await this.page.goto(pageRoutes.account, { waitUntil: "domcontentloaded" });
+    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
     await this.TAI_link_on_homepage.click();
     await expect(this.page).toHaveURL(
       "https://urxprt.com/en/searchrentproducts",
     );
     await this.page.waitForLoadState("networkidle");
   }
-
+  async gotoMASViaCard() {
+    await this.page.goto(pageRoutes.account, { waitUntil: "networkidle" });
+    await this.MAS_link_on_homepage.click();
+    await expect(this.page).toHaveURL(
+      "https://urxprt.com/en/searchmergersacquisitions",
+    );
+    await this.page.waitForLoadState("networkidle");
+  }
   async goToPTJViaHeader() {
     await this.navigateViaDropdown(
       "Part-Time Jobs",
@@ -161,7 +189,9 @@ export default class HomePage extends BasePage {
       "Find Experts", // Assuming the menu
       "Find Expert / Company", // Assuming the item
     );
-    await expect(this.page).toHaveURL("https://urxprt.com/en/hireexpertsmainpage");
+    await expect(this.page).toHaveURL(
+      "https://urxprt.com/en/hireexpertsmainpage",
+    );
     await this.page.waitForLoadState("networkidle");
   }
 
@@ -237,5 +267,4 @@ export default class HomePage extends BasePage {
   async openPTJPostFromMyOrders() {
     await this.ptj_orders.first().click();
   }
-
 }
