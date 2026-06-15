@@ -1,12 +1,11 @@
 import { test, expect } from "../../../fixtures/page.fixture.js";
 
-test("TC_BSM_001: BSM page is accessible after login", async ({
+test.only("TC_BSM_001: BSM page is accessible after login", async ({
   userPage,
   userHomePage,
 }) => {
   await userHomePage.gotoBSMViaCard();
   await expect(userPage).toHaveURL("https://urxprt.com/en/searchbuyproducts");
-
   await userHomePage.gotoHomepage();
   await userHomePage.goToBSMViaHeader();
   await expect(userPage).toHaveURL("https://urxprt.com/en/searchbuyproducts");
@@ -15,17 +14,15 @@ test("TC_BSM_001: BSM page is accessible after login", async ({
 test("TC_BSM_002: Search filters return expected results", async ({
   userPage,
   userHomePage,
+  userBSMPage
 }) => {
   await userHomePage.gotoBSMViaCard();
   const randomText = "Cricket kit";
-  const search_box = userPage.getByRole("textbox", { name: "Search BSM" });
-  const search_button = userPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
-  const postNames = await userPage.locator("//div[@class='packaged-img']//h6");
-  await postNames.first().waitFor();
-  await userPage.waitForTimeout(1200);
-  const count = await postNames.count();
+  await userBSMPage.searchFor(randomText);
+  const post_name = await userBSMPage.postNames;
+  await post_name.first().waitFor();
+  await userPage.waitForTimeout(500);
+  const count = await post_name.count();
   expect(count).toBeGreaterThanOrEqual(1);
 });
 

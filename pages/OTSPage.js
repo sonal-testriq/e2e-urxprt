@@ -50,6 +50,9 @@ export default class OTSPage extends BasePage {
     this.error_message = page.locator(".error");
     this.projectTitle = page.locator("//label[contains(.,'Project title')]");
     this.projectUrl = page.locator("//label[contains(.,'Project URL')]");
+    this.view_submission_button = page.locator("//div[@class='post-back']//button[contains(text(),'View Submission')]");
+    this.submission_overview_tab = page.locator("#Overview .modal-content .submission-sec");
+    this.submission_overview_closeBtn = page.locator("#Overview .modal-content .close-button img");
   }
 
   async clickOnCreateAPostButton() {
@@ -88,6 +91,11 @@ export default class OTSPage extends BasePage {
   async searchFor(text) {
     await this.search_box.fill(text);
     await this.search_button.click();
+  }
+
+  async getErrorMessage() {
+    await this.error_message.first().waitFor();
+    return await this.error_message.allTextContents();
   }
 
   async waitForFilteredResults() {
@@ -378,5 +386,89 @@ export default class OTSPage extends BasePage {
     await expect(this.projectTitle).not.toBeVisible();
     await expect(this.projectUrl).not.toBeVisible();
   }
+
+  async acceptOffer(newPage) {
+    await newPage.locator("label[for='agree']").click();
+    await newPage.waitForTimeout(500);
+    const scrollToBottomBtn = newPage.locator(".popup-contract-container").locator("button", {
+        name: "Scroll to Bottom",
+        exact: true,
+      });
+    await scrollToBottomBtn.click();
+    await newPage.waitForTimeout(500);
+    await newPage.locator(".popup-contract-container").locator("input[id='agree']").click();
+    await newPage.waitForLoadState("networkidle");
+    await newPage.waitForTimeout(500);
+    const acceptOfferButton = newPage.locator("button", {
+      hasText: "Accept",
+    });
+    await acceptOfferButton.click();
+    await newPage.waitForTimeout(500);
+  }
+
+  async makePaymentForPost(newPage) {
+    const makePayment = newPage.locator("button", { hasText: "Make Payment" });
+    await expect(makePayment).toBeVisible();
+    await makePayment.click();
+    const saveAndMakePayment = newPage.locator("button", { hasText: "Save and make payment" });
+    await saveAndMakePayment.click();
+    await newPage.waitForTimeout(1000);
+    await expect(newPage.locator('iframe[title="Card Number"]')).toBeVisible();
+    await newPage.frameLocator('iframe[title="Card Number"]').locator('input[name="card.number"]').fill("5555555555554444");
+    await newPage.locator('input[placeholder="MM / YY"]').fill("12 / 30");
+    await newPage.locator('input[placeholder="Card holder"]').fill("Test User");
+    await newPage.frameLocator('iframe[title="Security Code CVV"]').locator('input[name="card.cvv"]').fill("123");
+    await Promise.all([
+      newPage.waitForURL("**oppwa.com/**"),
+      await newPage.getByRole("button", { name: "Pay now" }).click(),
+    ]);
+    await newPage.waitForLoadState("networkidle");
+    const payBtn = await newPage.locator('input[value="Pay"]');
+    await payBtn.click();
+    await newPage.waitForTimeout(1000);
+  }
+
+  async acceptAndStartOTS() {
+    await this.page.locator("label[for='agree']").click();
+    await this.page.waitForTimeout(500);
+    const scrollToBottomBtn = await this.page.locator(".popup-contract-container").locator("button", {
+        name: "Scroll to Bottom",
+        exact: true,
+      });
+    await scrollToBottomBtn.click();
+    await this.page.waitForTimeout(500);
+    await this.page.locator(".popup-contract-container").locator("input[id='agree']").click();
+    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForTimeout(500);
+    const acceptOfferButton = await this.page.locator("button", {
+      hasText: "Accepted and Start OTS",
+    });
+    await acceptOfferButton.click();
+    await this.page.waitForTimeout(500);
+  }
+
+  async insertImage(image) {
+    await this.page.locator('input[type="file"]').setInputFiles(image);
+    await expect(this.page.locator("//img[@alt='Delete']")).toBeVisible();
+  }
+
+  async approveSubmission() {
+    await this.page.locator("//button[contains(text(),'View milestone')]").click();
+    await this.page.locator(".work-submit").click();
+    const submissionTab = await this.page.locator("#Milestones .modal-content .submission-sec");
+    await expect(submissionTab).toBeVisible();
+    const approveButton = this.page.locator("//button[contains(text(),'Approve Submission')]");
+    await approveButton.click();
+  }
+
+  async goToMilestoneTab() {
+    const postNavTabs = this.page.locator(".nav-tabs");
+    const milestonesTab = postNavTabs.locator("a", {
+      hasText: "Milestones",
+      exact: false,
+    });
+    await milestonesTab.click();
+  }
+  
 
 }

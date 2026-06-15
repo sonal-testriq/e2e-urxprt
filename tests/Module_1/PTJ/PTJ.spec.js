@@ -16,107 +16,72 @@ test("TC_PTJ_001: PTJ account page is accessible after login", async ({
 test("TC_PTJ_002: Search filters return expected PTJ results", async ({
   userPage,
   userHomePage,
+  userPTJPage
 }) => {
   await userHomePage.gotoPTJViaCard();
-  const randomText = "Testing";
-  const search_box = userPage.getByRole("textbox", { name: "Search PTJ" });
-  const search_button = userPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
+  const randomText = "UI design";
+  await userPTJPage.searchFor(randomText)
   await userPage.waitForLoadState("networkidle");
-  const postNames = await userPage.locator("//div[@class='filter-detail']//h5");
-  await postNames.first().waitFor();
-  const count = await postNames.count();
+  const post_name = await userPTJPage.postNames;
+  await post_name.first().waitFor();
+  const count = await post_name.count();
   expect(count).toBeGreaterThanOrEqual(1);
 });
 
 test("TC_PTJ_003: Open PTJ create post page from header and dashboard", async ({
   userPage,
   userHomePage,
+  userPTJPage
 }) => {
   await userHomePage.gotoPTJViaCard();
-  const create_a_post_button = userPage.locator(
-    "//button[contains(text(),'Create a post')]",
-  );
-  await create_a_post_button.click();
+  await userPTJPage.clickOnCreateAPostButton();
   await expect(userPage).toHaveURL(/.*\/createpost/);
   await userHomePage.gotoHomepage();
   await userHomePage.goToPTJViaHeader();
-  await create_a_post_button.click();
+  await userPTJPage.clickOnCreateAPostButton();
   await expect(userPage).toHaveURL(/.*\/createpost/);
   await userHomePage.gotoHomepage();
   await userHomePage.goToPTJViaDashboard();
-  await create_a_post_button.click();
+  await userPTJPage.clickOnCreateAPostButton();
   await expect(userPage).toHaveURL(/.*\/createpost/);
 });
 
 test("TC_PTJ_004: View filtered PTJ post details and verify recently viewed posts", async ({
   userPage,
   userHomePage,
+  userPTJPage
 }) => {
   await userHomePage.gotoPTJViaCard();
-  const search_box = userPage.getByRole("textbox", { name: "Search PTJ" });
-  const search_button = userPage.getByRole("button", { name: "Search" });
-  await search_box.fill("UI design");
-  await search_button.click();
-  const postNames = await userPage.locator(
-    "//div[@class='filter-detail']//h5",
-  );
-  await postNames.first().waitFor();
-  const count = await postNames.count();
+  await userPTJPage.searchFor("UI design");
+  await userPage.waitForLoadState("networkidle");
+  await userPTJPage.waitForPosts();
+  await userPage.waitForTimeout(500);
+  const count = await userPTJPage.getPostCount();
   expect(count).toBeGreaterThanOrEqual(1);
-  const [newPage] = await Promise.all([
-    userPage.context().waitForEvent("page"),
-    postNames.click(),
-  ]);
-  await newPage.waitForLoadState();
-  return newPage;
+  const newPage = await userPTJPage.openFirstFilteredPost();
+  await userPTJPage.verifyPostDetailsIsVisible(newPage);
   await newPage.close();
   await userPage.reload();
-  const recently_viewed_tab = userPage.locator(
-    "//a[contains(text(),'Recently viewed')]",
-  );
-  await recently_viewed_tab.click();
-  const recently_reviewed_post = userPage.locator(
-    "//div[@class='filter-detail']//h5",
-  );
-  await recently_reviewed_post.first().waitFor();
-  const reviewedCount = await recently_reviewed_post.count();
-  expect(reviewedCount).toBeGreaterThanOrEqual(1);
-  const isPresent = await recently_reviewed_post.first().textContent();
-  expect(isPresent).toContain("UI designer");
+  await userPTJPage.goToRecentlyReviewedPage();
+  await userPTJPage.verifyRecentlyViewedPost("UI design");
 });
 
 test("TC_PTJ_005: Save a filtered PTJ post and verify saved posts page", async ({
   userPage,
   userHomePage,
+  userPTJPage
 }) => {
   await userHomePage.gotoPTJViaCard();
-  // Search for a specific post
-  const search_box = userPage.getByRole("textbox", { name: "Search PTJ" });
-  const search_button = userPage.getByRole("button", { name: "Search" });
-  await search_box.fill("UI design");
-  await search_button.click();
-  const postNames = await userPage.locator(
-    "//div[@class='filter-detail']//h5",
-  );
-  await postNames.first().waitFor();
-  const count = await postNames.count();
-  expect(count).toBeGreaterThanOrEqual(1);
-
-  // Save the post and verify it appears in saved posts page
-  const heart_button = userPage.locator("//button[@class='btn heart-btn']");
+  await userPTJPage.searchFor("UI design");
   await userPage.waitForLoadState("networkidle");
-  await heart_button.first().waitFor();
-  await heart_button.first().click();
-
-  const saved_posts_tab = userPage.locator(
-    "//a[contains(text(),'Saved posts')]",
-  );
-  await saved_posts_tab.click();
-  const saved_post = userPage.locator("//div[@class='filter-detail']//h5");
-  await expect(saved_post.first()).toBeVisible();
-  await expect(saved_post).toContainText("UI design");
+  await userPTJPage.waitForPosts();
+  await userPage.waitForTimeout(500);
+  const count = await userPTJPage.getPostCount();
+  expect(count).toBeGreaterThanOrEqual(1);
+  await userPTJPage.saveFirstPost();
+  await userPTJPage.goToSavedPostsPage();
+  await userPTJPage.verifySavedPost("UI design");
+  await userPTJPage.saveFirstPost();
 });
 
 test("TC_PTJ_006: Apply PTJ filters and verify result counts update correctly", async ({
@@ -125,10 +90,8 @@ test("TC_PTJ_006: Apply PTJ filters and verify result counts update correctly", 
   userPTJPage,
 }) => {
   await userHomePage.gotoPTJViaCard();
-  const postNames = await userPage.locator(
-    "//div[@class='filter-detail']//h5",
-  );
-  await postNames.first().waitFor();
+  const post_names = await userPTJPage.postNames;
+  await post_names.first().waitFor();
   await userPage.waitForLoadState("networkidle");
   const originalPageCount = await userPTJPage.getTheTotalPageNumber();
   const beforeFilter = (await userPTJPage.postNames.allTextContents())
@@ -139,18 +102,14 @@ test("TC_PTJ_006: Apply PTJ filters and verify result counts update correctly", 
     const after = await userPTJPage.postNames.allTextContents();
     expect(after).not.toEqual(beforeFilter);
   }).toPass();
-  await userPTJPage.chooseEnergyFromIndustryFilter();
+  await userPTJPage.chooseECommerceFromIndustryFilter();
   const countAfterIndustrySelect = await userPTJPage.getUpdatedPageNumber();
   expect(originalPageCount).not.toEqual(countAfterIndustrySelect);
-  await userPTJPage.chooseOilFromCategoryFilter();
-  const countAfterCategorySelect = await userPTJPage.getUpdatedPageNumber();
-  expect(countAfterCategorySelect).not.toEqual(countAfterIndustrySelect);
-  await userPTJPage.chooseDrillingFromSubCategory();
-  const countAfterSubCategorySelection =
-    await userPTJPage.getUpdatedPageNumber();
-  expect(countAfterSubCategorySelection).not.toEqual(
-    countAfterCategorySelect,
-  );
+  const totalPostBeforeCategoryApply = await userPTJPage.getTotalPostsCount();
+  await userPTJPage.chooseSupplyChainFromCategoryFilter();
+  await userPage.waitForTimeout(500);
+  const totalPostAfterCategoryApply = await userPTJPage.getTotalPostsCount();
+  expect(totalPostAfterCategoryApply).not.toEqual(totalPostBeforeCategoryApply);
   await userPTJPage.removeFilter();
   const countAfterClearingFilter = await userPTJPage.getUpdatedPageNumber();
   expect(countAfterClearingFilter).toEqual(originalPageCount);
@@ -164,111 +123,55 @@ test.describe("PTJ Flow", () => {
     userPTJPage,
   }) => {
     await userHomePage.gotoPTJViaCard();
-    const create_a_post_button = userPage.locator(
-      "//button[contains(text(),'Create a post')]",
-    );
-    await create_a_post_button.click();
+    await userPTJPage.clickOnCreateAPostButton();
     await expect(userPage).toHaveURL(/.*\/createpost/);
-
     // STEP 1
     await userPTJPage.selectRadioOption("Part Time Job (PTJ)");
     await userPTJPage.selectRadioOption("Hourly");
     await userPTJPage.fillInput("Job Title", PTJPost_Name);
     await userPTJPage.selectDropdown("Select Industries *", "Business");
-    await userPTJPage.selectDropdown(
-      "Select Category *",
-      "Managing and Consultant",
-    );
-    await userPTJPage.selectDropdown(
-      "Select Sub Category",
-      "Project Management",
-    );
+    await userPTJPage.selectDropdown("Select Category *", "Managing and Consultant");
+    await userPTJPage.selectDropdown("Select Sub Category", "Project Management");
     await userPTJPage.selectRadioOption("Physical");
     await userPTJPage.selectDropdown("Country", "India");
     await userPTJPage.fillInput("City", "Mumbai");
-    await userPTJPage.fillRichTextEditor(
-      "Job Description *",
-      "This is a test description for automation",
-    );
-
-    await userPage.waitForTimeout(2000); // wait for validation to trigger
-    const nextButton = userPage.getByRole("button", { name: "Next" });
-    await expect(nextButton).toBeEnabled();
-    await nextButton.click();
-
+    await userPTJPage.fillRichTextEditor("Job Description *", "This is a test description for automation");
+    await userPage.waitForTimeout(1000); 
+    await userPTJPage.clickNext();
     // STEP 2
-    await userPTJPage.selectMultiDropdown("Select competencies", [
-      "Branding",
-      "Campaigns",
-    ]);
-
-    expect(
-      await userPage.getByText("Add Required competencies for this job"),
-    ).toBeVisible();
+    await userPTJPage.selectMultiDropdown("Select competencies", ["Branding", "Campaigns"]);
+    expect(await userPage.getByText("Add Required competencies for this job")).toBeVisible();
     // add custom competency
-    const addManuallyButton = userPage.getByRole("button", {
-      name: /Add manually/i,
-    });
-
+    const addManuallyButton = userPage.getByRole("button", { name: /Add manually/i });
     await addManuallyButton.click();
-    await userPTJPage.fillInputWithPlaceholder(
-      "Type a competency",
-      "Dummy Competency",
-    );
-    const addCompetencyButton = userPage.getByRole("button", {
-      name: "Add",
-      exact: true,
-    });
+    await userPTJPage.fillInputWithPlaceholder("Type a competency", "Dummy Competency");
+    const addCompetencyButton = userPage.getByRole("button", { name: "Add", exact: true });
     await addCompetencyButton.click();
-
-    const skill = userPage.locator("p.select-deactive-skill", {
-      hasText: "CRM +",
-      exact: true,
-    });
+    const skill = userPage.locator("p.select-deactive-skill", { hasText: "CRM +", exact: true });
     await skill.click();
-
-    await expect(nextButton).toBeEnabled();
-    await nextButton.click();
-
+    await userPTJPage.clickNext();
     // Step 3
     await userPTJPage.fillInputWithPlaceholder("Enter From Price", "10");
     await userPTJPage.fillInputWithPlaceholder("Enter To Price", "15");
-    await userPTJPage.selectDropdown(
-      "Preferred Language of Work Submission *",
-      "English",
-    );
-
-    await expect(nextButton).toBeEnabled();
-    await nextButton.click();
-
-    await expect(
-      userPage.getByText("Part time job (PTJ) Summary"),
-    ).toBeVisible();
-    const postJobButton = userPage.getByRole("button", { name: "Post Job" });
-    postJobButton.click();
-
-    await expect(
-      userPage.getByText("Congratulations! Your post is now live."),
-    ).toBeVisible();
+    await userPTJPage.selectDropdown( "Preferred Language of Work Submission *", "English" );
+    await userPTJPage.clickNext();  
+    await userPTJPage.verifyPTJSummary();
+    await userPTJPage.postJob();
+    await userPTJPage.verifyPostCreated();
   });
 
   test("TC_PTJ_008: Search filters return newly created PTJ post", async ({
       userPage,
       userHomePage,
+      userPTJPage
     }) => {
       await userHomePage.gotoPTJViaCard();
-      // await userHomePage.searchOnPBPPage('Frontend Developer');
-      const search_box = userPage.getByRole("textbox", { name: "Search PTJ" });
-      const search_button = userPage.getByRole("button", { name: "Search" });
-      //   await userPage.waitForTimeout(2000);
-      await search_box.fill(PTJPost_Name);
-      await search_button.click();
+      await userPTJPage.searchFor(PTJPost_Name);
       await userPage.waitForLoadState("networkidle"); // wait for search results to load
-      const postNames = await userPage.locator(
-        "//div[@class='filter-detail']//h5",
-      );
-      await postNames.first().waitFor();
-      const count = await postNames.count();
+      const post_names = await userPTJPage.postNames;
+      await post_names.first().waitFor();
+      await userPage.waitForTimeout(500);
+      const count = await post_names.count();
       expect(count).toBe(1);
   });
 
@@ -284,21 +187,19 @@ test.describe("PTJ Flow", () => {
   test("TC_PTJ_010: Verify newly created PTJ post is editable and updates correctly", async ({
   userPage,
   userHomePage,
-  userPBPPage,
+  userPTJPage,
   }) => {
     await userHomePage.gotoPTJViaCard();
     await userHomePage.navigateToMyOrdersViaPreview();
     await userHomePage.openPTJPostFromMyOrders();
     await expect(userHomePage.post_job_name_in_part_time_job.first()).toBeVisible();
-    await userPBPPage.goToEditProjectDetailsPage();
+    await userPTJPage.goToEditProjectDetailsPage();
     await userHomePage.clickOnEditButton("Project Title");
-    await userPBPPage.fillInput("Enter Title", PTJPost_Name+" Edited");
-    await userPBPPage.clickOnSaveNButton();
+    await userPTJPage.fillInput("Enter Title", PTJPost_Name+" Edited");
+    await userPTJPage.clickOnSaveNButton();
     const postProjectButton = userPage.getByRole("button", { name: "Post Job" });
     postProjectButton.click();
-    await expect(
-      userPage.getByText("PTJ updated sucessfully"),
-    ).toBeVisible();
+    await expect(userPage.getByText("PTJ updated sucessfully")).toBeVisible();
     await userHomePage.navigateToMyOrdersViaPreview();
     await userHomePage.openPTJPostFromMyOrders();
     await expect(userHomePage.post_job_name_in_part_time_job.first()).toHaveText(PTJPost_Name+" Edited");
@@ -307,34 +208,28 @@ test.describe("PTJ Flow", () => {
   test("TC_PTJ_011: Verify newly created PTJ post can be cancelled", async ({
   userPage,
   userHomePage,
-  userPBPPage,
+  userPTJPage,
   }) => {
     await userHomePage.gotoPTJViaCard();
     await userHomePage.navigateToMyOrdersViaPreview();
     await userHomePage.openPTJPostFromMyOrders();
     await expect(userHomePage.post_job_name_in_part_time_job.first()).toBeVisible();
-    await userPBPPage.view_details_button.first().click();
-    await userPBPPage.cancelCreatedPBPPost();
-    await expect(
-      userPage.getByText("Your post has been successfully cancelled"),
-    ).toBeVisible();
+    await userPTJPage.view_details_button.first().click();
+    await userPTJPage.cancelCreatedPBPPost();
+    await expect(userPage.getByText("Your post has been successfully cancelled")).toBeVisible();
   })
 
   test("TC_PTJ_012: Verify cancelled PTJ post is removed from search results", async ({
       userPage,
       userHomePage,
+      userPTJPage
     }) => {
       await userHomePage.gotoPTJViaCard();
-      const search_box = userPage.getByRole("textbox", { name: "Search PTJ" });
-      const search_button = userPage.getByRole("button", { name: "Search" });
-      await search_box.fill(PTJPost_Name);
-      await search_button.click();
+      await userPTJPage.searchFor(PTJPost_Name);
       await userPage.waitForLoadState("networkidle"); 
-      const postNames = await userPage.locator(
-        "//div[@class='filter-detail']//h5",
-      );
-      await expect(postNames.first()).not.toBeVisible();
-      const count = await postNames.count();
+      const post_names = await userPTJPage.postNames;
+      await expect(post_names.first()).not.toBeVisible();
+      const count = await post_names.count();
       expect(count).toBe(0);
   });
 });

@@ -1,632 +1,229 @@
 import { test, expect } from "../../../fixtures/page.fixture.js";
-import PTJPage from "../../../pages/part-time-job.page.js";
-import { assert } from "node:console";
-import { describe } from "node:test";
-import credentials from "../../../testData/credentials.json";
-import fs from "fs";
-import path from "path";
-import { pageRoutes, PTJPostName } from "../../../testData/constants.js";
+import { pageRoutes, PTJPost_Name } from "../../../testData/constants.js";
 
 import { BasePage } from "../../../pages/base_page.js";
 test.describe.serial("PTJ Flow", () => {
-  test("Create a post form validations", async ({
+  test("TC_001: Create a post form validations", async ({
     userPage,
     userHomePage,
     userPTJPage,
   }) => {
     await userHomePage.gotoPTJViaCard();
-    const create_a_post_button = userPage.locator(
-      "//button[contains(text(),'Create a post')]",
-    );
-    await create_a_post_button.click();
+    await userPTJPage.clickOnCreateAPostButton();
     await expect(userPage).toHaveURL(/.*\/createpost/);
-
     // STEP 1
     await userPTJPage.selectRadioOption("Part Time Job (PTJ)");
     await userPTJPage.selectRadioOption("Hourly");
-    await userPTJPage.fillInput("Job Title", PTJPostName);
+    await userPTJPage.fillInput("Job Title", PTJPost_Name);
     await userPTJPage.selectDropdown("Select Industries *", "Business");
-    await userPTJPage.selectDropdown(
-      "Select Category *",
-      "Managing and Consultant",
-    );
-    await userPTJPage.selectDropdown(
-      "Select Sub Category",
-      "Project Management",
-    );
+    await userPTJPage.selectDropdown("Select Category *", "Managing and Consultant");
+    await userPTJPage.selectDropdown("Select Sub Category", "Project Management");
     await userPTJPage.selectRadioOption("Physical");
     await userPTJPage.selectDropdown("Country", "India");
     await userPTJPage.fillInput("City", "Mumbai");
-    await userPTJPage.fillRichTextEditor(
-      "Job Description *",
-      "This is a test description for automation",
-    );
-
-    await userPage.waitForTimeout(2000); // wait for validation to trigger
-    const nextButton = userPage.getByRole("button", { name: "Next" });
-    await expect(nextButton).toBeEnabled();
-    await nextButton.click();
+    await userPTJPage.fillRichTextEditor("Job Description *", "This is a test description for automation");
+    await userPage.waitForTimeout(1000);
+    await userPTJPage.clickNext();
 
     // STEP 2
-    await userPTJPage.selectMultiDropdown("Select competencies", [
-      "Branding",
-      "Campaigns",
-    ]);
-
-    expect(
-      await userPage.getByText("Add Required competencies for this job"),
-    ).toBeVisible();
-    // add custom competency
-    const addManuallyButton = userPage.getByRole("button", {
-      name: /Add manually/i,
-    });
-
+    await userPTJPage.selectMultiDropdown("Select competencies", ["Branding", "Campaigns"]);
+    expect(await userPage.getByText("Add Required competencies for this job")).toBeVisible();
+    const addManuallyButton = userPage.getByRole("button", { name: /Add manually/i });
     await addManuallyButton.click();
-    await userPTJPage.fillInputWithPlaceholder(
-      "Type a competency",
-      "Dummy Competency",
-    );
-    const addCompetencyButton = userPage.getByRole("button", {
-      name: "Add",
-      exact: true,
-    });
+    await userPTJPage.fillInputWithPlaceholder("Type a competency", "Dummy Competency");
+    const addCompetencyButton = userPage.getByRole("button", { name: "Add", exact: true });
     await addCompetencyButton.click();
-
-    const skill = userPage.locator("p.select-deactive-skill", {
-      hasText: "CRM +",
-      exact: true,
-    });
+    const skill = userPage.locator("p.select-deactive-skill", { hasText: "CRM +", exact: true });
     await skill.click();
-
-    await expect(nextButton).toBeEnabled();
-    await nextButton.click();
+    await userPTJPage.clickNext();
 
     // Step 3
     await userPTJPage.fillInputWithPlaceholder("Enter From Price", "10");
     await userPTJPage.fillInputWithPlaceholder("Enter To Price", "15");
-    await userPTJPage.selectDropdown(
-      "Preferred Language of Work Submission *",
-      "English",
-    );
-
-    await expect(nextButton).toBeEnabled();
-    await nextButton.click();
-
-    await expect(
-      userPage.getByText("Part time job (PTJ) Summary"),
-    ).toBeVisible();
-    const postJobButton = userPage.getByRole("button", { name: "Post Job" });
-    postJobButton.click();
-
-    await expect(
-      userPage.getByText("Congratulations! Your post is now live."),
-    ).toBeVisible();
+    await userPTJPage.selectDropdown("Preferred Language of Work Submission *", "English");
+    await userPTJPage.clickNext();
+    await userPTJPage.verifyPTJSummary();
+    await userPTJPage.postJob();
+    await expect(userPage.getByText("Congratulations! Your post is now live.")).toBeVisible();
   });
 
-  test("Search filters return newly created post in results", async ({
+  test("TC_002: Search filters return newly created post in results", async ({
     userPage,
     userHomePage,
+    userPTJPage
   }) => {
     await userHomePage.gotoPTJViaCard();
-
-    // await userHomePage.searchOnPTJPage('Frontend Developer');
-    const search_box = userPage.getByRole("textbox", { name: "Search PTJ" });
-    const search_button = userPage.getByRole("button", { name: "Search" });
-    //   await userPage.waitForTimeout(2000);
-    await search_box.fill(PTJPostName);
-    await search_button.click();
-
+    await userPTJPage.searchFor(PTJPost_Name)
     await userPage.waitForLoadState("networkidle"); // wait for search results to load
-
-    const postNames = await userPage.locator(
-      "//div[@class='filter-detail']//h5",
-    );
-    await postNames.first().waitFor();
-    const count = await postNames.count();
+    const post_names = await userPTJPage.postNames;
+    await post_names.first().waitFor();
+    await userPage.waitForTimeout(500);
+    const count = await post_names.count();
     expect(count).toBe(1);
   });
 
-  test("Verify newly created post exist on the part time jobs listing", async ({
+  test("TC_003: Verify newly created post exist on the part time jobs listing", async ({
     userPage,
     userHomePage,
   }) => {
     await userHomePage.gotoPTJViaCard();
     await expect(userPage).toHaveURL("https://urxprt.com/en/searchall?type=3");
-    const postCard = userPage.locator(".filter-detail", {
-      hasText: PTJPostName,
-    });
-
+    const postCard = userPage.locator(".filter-detail", { hasText: PTJPost_Name });
     await expect(postCard.getByText("Your post")).toBeVisible();
   });
 
-  test("Applying for post by 'Expert' user", async ({
+  test("TC_004: Applying for post by 'company' user", async ({
     expertPage,
     expertHomePage,
+    expertPTJPage
   }) => {
     await expertHomePage.gotoPTJViaCard();
-    await expect(expertPage).toHaveURL(
-      "https://urxprt.com/en/searchall?type=3",
-    );
-    const postCard = expertPage.locator(".filter-detail", {
-      hasText: PTJPostName,
-    });
-    await expect(postCard).toBeVisible();
-    await postCard.click();
-    const [newPage] = await Promise.all([
-      expertPage.context().waitForEvent("page"),
-      postCard.click(),
-    ]);
-
-    await newPage.waitForLoadState();
-
-    const newPageObject = new BasePage(newPage);
-
-    const applyButton = newPage.getByRole("button", {
-      name: "Apply for job",
-      exact: true,
-    });
-    await applyButton.click();
-    await newPage.waitForLoadState("networkidle");
-    await newPageObject.fillInputWithPlaceholder(
-      "Enter your message",
-      "This is a test cover letter for automation",
-    );
-    await newPageObject.fillInputWithPlaceholder("Enter price in $", "8");
-    await newPageObject.uploadFile(
-      "Attach files",
-      "testData/Cover-Letter-Samples.pdf",
-    );
-    const sendOfferButton = newPage.locator("//button[@type='submit']");
-    await sendOfferButton.click();
-
-    await expect(
-      newPage.getByText(
-        "Congratulations! Your Proposal has been submitted successfully.",
-      ),
-    ).toBeVisible();
+    await expect(expertPage).toHaveURL("https://urxprt.com/en/searchall?type=3");
+    const newPage = await expertPTJPage.openPost(PTJPost_Name);
+    await expertPTJPage.applyForJob(newPage);
+    await expertPTJPage.submitProposal(newPage);
+    await expertPTJPage.verifyProposalSubmitted(newPage);
   });
 
-  test("Verify applied post appears in 'Manage Work' page for 'Expert' user", async ({
+  test("TC_005: Verify applied post appears in 'Manage Work' page for 'Company' user", async ({
     expertPage,
     expertHomePage,
   }) => {
     await expertHomePage.gotoDashboardPage();
     await expect(expertPage).toHaveURL("https://urxprt.com/en/dashboard");
-
-    const manageWorkTab = expertPage.locator("a", {
-      hasText: "Part time Job (PTJ)",
-    });
+    const manageWorkTab = expertPage.locator("a", { hasText: "Part time Job (PTJ)" });
     await manageWorkTab.click();
-    const appliedPost = expertPage.locator(
-      ".post-back.recent-back.recent-first",
-      {
-        hasText: PTJPostName,
-      },
-    );
+    const appliedPost = expertPage.locator(".post-back.recent-back.recent-first", { hasText: PTJPost_Name });
     await expect(appliedPost).toBeVisible();
   });
 
-  test("Verify applied post appears in 'My Orders' page for 'User' after expert applies", async ({
+  test("TC_006: Verify applied post appears in 'My Orders' page for 'User' after company applies", async ({
     userPage,
     userHomePage,
+    userPTJPage
   }) => {
-    await userPage.goto(`/en/dashboard`, { waitUntil: "networkidle" });
-    const manageOrderTab = userPage.locator("a", {
-      hasText: "My Orders",
-    });
-    await manageOrderTab.click();
-    const orderTabs = userPage
-      .locator("#MyOrderPostedorders")
-      .locator(".order-tabs");
-
-    const PTJTab = orderTabs.locator("a", {
-      hasText: "Part time Job (PTJ)",
-      exact: false,
-    });
-    await PTJTab.click();
-    const tabContent = userPage.locator(".tab-content");
-    const PostedPTJ = tabContent.locator("h4", {
-      hasText: "Posted Part time Job (PTJ)",
-    });
-    await expect(PostedPTJ).toBeVisible();
-    const orderCard = userPage.locator("h3", {
-      hasText: PTJPostName,
-    });
-    await expect(orderCard).toBeVisible();
-    await orderCard.click();
-    const postNavTabs = userPage.locator(".nav-tabs");
-    const proposalsTab = postNavTabs.locator("a", {
-      hasText: "All Proposals",
-      exact: false,
-    });
-    await proposalsTab.click();
-    const shivakumarCard = userPage.locator(".all-proposal", {
-      has: userPage.locator("h5", { hasText: "Shivakumar GP" }),
-    });
-    await userPage.waitForTimeout(2000);
-    await shivakumarCard.getByRole("button", { name: "Send Offer" }).click();
-    // await sendOfferToExpertButton.scrollIntoViewIfNeeded();
-    // await expect(sendOfferToExpertButton).toBeVisible();
-    // await sendOfferToExpertButton.click();
-    // await fillInput(userPage, "First name", "Shiva");
-    // await fillInput(userPage, "Last name", "Kumar");
-
-    await userPage.locator("label[for='agree']").click();
-
-    const scrollToBottomBtn = userPage
-      .locator(".popup-contract-container")
-      .locator("button", {
-        name: "Scroll to Bottom",
-        exact: true,
-      });
-    await userPage.waitForTimeout(2000);
-    await scrollToBottomBtn.click();
-    await userPage
-      .locator(".popup-contract-container")
-      .locator("input[id='agree']")
-      .click();
-    await userPage.waitForLoadState("networkidle");
-    await userPage.waitForTimeout(2000);
-
-    const acceptOfferButton = userPage.locator("button", {
-      hasText: "Accept",
-    });
-    await acceptOfferButton.click();
-    await userPage.waitForTimeout(5000);
+    await userHomePage.gotoMyOrdersPTJ();
+    await userHomePage.openPTJOrder(PTJPost_Name);
+    await userPTJPage.openAllProposalsTab();
+    await userPTJPage.sendOfferToCompany("Shivakumar GP");
+    await userPTJPage.acceptOfferContract();
+    await userPage.waitForTimeout(1200);
+    await userPTJPage.verifySuccessMessageIsDisplayed("Offer sent successfully")
   });
 
-  // Making payment for sent offer
-  test("Making payment for sent offer", async ({ userPage }) => {
-    await userPage.goto(`/en/dashboard/myorders`, { waitUntil: "networkidle" });
-    const orderTabs = userPage
-      .locator("#MyOrderPostedorders")
-      .locator(".order-tabs");
-
-    const PTJTab = orderTabs.locator("a", {
-      hasText: "Part time Job (PTJ)",
-      exact: false,
-    });
-    await PTJTab.click();
-    const tabContent = userPage.locator(".tab-content");
-    const PostedPTJ = tabContent.locator("h4", {
-      hasText: "Posted Part time Job (PTJ)",
-    });
-    await expect(PostedPTJ).toBeVisible();
-    const orderCard = userPage.locator("h3", {
-      hasText: PTJPostName,
-    });
-    await expect(orderCard).toBeVisible();
-    await orderCard.click();
-    const postNavTabs = userPage.locator(".nav-tabs");
-    const proposalsTab = postNavTabs.locator("a", {
-      hasText: "All Proposals",
-      exact: false,
-    });
-    await proposalsTab.click();
-    const shivakumarCard = userPage.locator(".all-proposal", {
-      has: userPage.locator("h5", { hasText: "Shivakumar GP" }),
-    });
-    const PaymentButton = shivakumarCard.locator("button", {
-      hasText: "Pay",
-      exact: true,
-    });
-    await expect(PaymentButton).toBeVisible();
-    await PaymentButton.click();
-    const makePayment = userPage.locator("button", { hasText: "Make Payment" });
-    await expect(makePayment).toBeVisible();
-    await makePayment.click();
-    const saveAndMakePayment = userPage.locator("button", {
-      hasText: "Save and make payment",
-    });
-    await saveAndMakePayment.click();
-    await userPage.waitForTimeout(5000);
-
-    await expect(userPage.locator('iframe[title="Card Number"]')).toBeVisible();
-
-    await userPage
-      .frameLocator('iframe[title="Card Number"]')
-      .locator('input[name="card.number"]')
-      .fill("5555555555554444");
-
-    await userPage.locator('input[placeholder="MM / YY"]').fill("12 / 30");
-
-    await userPage
-      .locator('input[placeholder="Card holder"]')
-      .fill("Test User");
-
-    await userPage
-      .frameLocator('iframe[title="Security Code CVV"]')
-      .locator('input[name="card.cvv"]')
-      .fill("123");
-
-    // Click payment submit and wait for redirect
-    await Promise.all([
-      userPage.waitForURL("**oppwa.com/**"),
-      await userPage
-        .getByRole("button", {
-          name: "Pay now",
-        })
-        .click(),
-    ]);
-    await userPage.waitForLoadState("networkidle");
-
-    const payBtn = await userPage.locator('input[value="Pay"]');
-    await payBtn.click();
+  test("TC_007: Making payment for sent offer", async ({ 
+    userPage, 
+    userHomePage, 
+    userPTJPage 
+  }) => {
+    await userPage.goto("/en/dashboard/myorders", { waitUntil: "networkidle" });
+    await userHomePage.openPTJPostFromMyOrders();
+    await userPTJPage.openProposalForPayment(PTJPost_Name, "Shivakumar GP");
+    await userPTJPage.makeProposalPayment();
+    await userPTJPage.fillCardDetails();
+    await userPTJPage.submitPayment();
     await userPage.waitForTimeout(3000);
     await expect(
       userPage.getByText("PTJ Payment Completed").first(),
     ).toBeVisible();
   });
 
-  test("Verify whether expert gets notification about offer and expert can accept offer from manage work page", async ({
+  test("TC_008: Verify whether company gets notification about offer and company can accept offer from manage work page", async ({
     expertPage,
     expertHomePage,
+    expertPTJPage
   }) => {
     await expertHomePage.gotoDashboardPage();
     await expect(expertPage).toHaveURL("https://urxprt.com/en/dashboard");
-
-    const manageWorkTab = expertPage.locator("a", {
-      hasText: "Part time Job (PTJ)",
-    });
-    await manageWorkTab.click();
-    const appliedPost = expertPage.locator(
-      ".post-back.recent-back.recent-first",
-      {
-        hasText: PTJPostName,
-      },
-    );
-    await expect(appliedPost).toBeVisible();
-    appliedPost.getByRole("button", { name: "View Details" }).click();
-
-    const postNavTabs = expertPage.locator(".nav-tabs");
-    const offersTab = postNavTabs.locator("a", {
-      hasText: "Offers",
-      exact: true,
-    });
-    await offersTab.click();
-
-    // await expertPage.waitForTimeout(30000);
-    await expertPage.getByRole("button", { name: "Accept offer" }).click();
-    // await expertPage.getByRole("button", { name: "Accept Offer" });
-    // await expertPage.getByRole("button", { name: "Accept Offer" });
-    await expertPage.waitForTimeout(1000);
-
-    await expertPage.locator("label[for='agree']").click();
-
-    const scrollToBottomBtn = expertPage
-      .locator(".popup-contract-container")
-      .locator("button", {
-        name: "Scroll to Bottom",
-        exact: true,
-      });
-    await expertPage.waitForTimeout(2000);
-    await scrollToBottomBtn.click();
-    await expertPage
-      .locator(".popup-contract-container")
-      .locator("input[id='agree']")
-      .click();
-    await expertPage.waitForLoadState("networkidle");
-    await expertPage.waitForTimeout(2000);
-
-    const acceptOfferButton = expertPage.locator("button", {
-      hasText: "Accept & Start Job",
-    });
-    await acceptOfferButton.click();
+    await expertPage.locator("a", { hasText: "Part time Job (PTJ)" }).click();
+    await expertPTJPage.openManageWorkPost(PTJPost_Name);
+    await expertPTJPage.openOffersTab();
+    await expertPTJPage.clickAcceptOffer();
+    await expertPTJPage.acceptStartJobContract()
     await expertPage.waitForTimeout(5000);
     await expect(
       expertPage.getByText("The Offer Has Been Accepted"),
     ).toBeVisible();
   });
 
-  test("Verify applied job appears at 'Active job' tabs", async ({
+  test("TC_009: Verify applied job appears at 'Active job' tabs", async ({
     expertHomePage,
     expertPage,
+    expertPTJPage
   }) => {
-    await expertHomePage.gotoDashboardPage();
-    await expect(expertPage).toHaveURL("https://urxprt.com/en/dashboard");
-
-    const manageWorkTab = expertPage.locator("a", {
-      hasText: "Part time Job (PTJ)",
-    });
-    await manageWorkTab.click();
-    const activePost = expertPage.locator("a:has-text('Active jobs')");
-    await activePost.click();
-    await expect(activePost).toBeVisible();
-    await expertPage.waitForLoadState("networkidle");
-    await expertPage.waitForTimeout(2000);
-    const postCard = expertPage.locator("div.post-back.recent-back").filter({
-      hasText: PTJPostName,
-    });
-    await expect(postCard).toBeVisible();
-    await postCard.click();
+    await expertHomePage.openPTJManageWork();
+    await expect(expertPage).toHaveURL("https://urxprt.com/en/dashboard/managework/jobs");
+    await expertPTJPage.openActiveJobsTab();
+    await expertPTJPage.verifyActiveJob(PTJPost_Name);
+    await expertPTJPage.openActiveJob(PTJPost_Name);
     await expertPage.waitForTimeout(2000);
   });
 
-  test("Verify 'Log time' button navigates to timesheet", async ({
+  test("TC_010: Verify 'Log time' button navigates to timesheet", async ({
     expertPage,
     expertHomePage,
+    expertPTJPage
   }) => {
-    await expertHomePage.gotoDashboardPage();
-    await expect(expertPage).toHaveURL("https://urxprt.com/en/dashboard");
-
-    const manageWorkTab = expertPage.locator("a", {
-      hasText: "Part time Job (PTJ)",
-    });
-    await manageWorkTab.click();
-    const activePost = expertPage.locator("a:has-text('Active jobs')");
-    await activePost.click();
-    await expect(activePost).toBeVisible();
-    await expertPage.waitForLoadState("networkidle");
-    await expertPage.waitForTimeout(2000);
-    const postCard = expertPage.locator("div.post-back.recent-back").filter({
-      hasText: PTJPostName,
-    });
-    await expect(postCard).toBeVisible();
-    await postCard.click();
-    await expertPage.waitForTimeout(2000);
-    const logTimeButton = expertPage.getByRole("button", {
-      name: "+ Log time",
-    });
-
-    await logTimeButton.click();
+    await expertHomePage.openPTJManageWork();
+    await expertPTJPage.openActiveJobsTab();
+    await expertPTJPage.openActiveJob(PTJPost_Name);
+    await expertPTJPage.clickLogTime();
     await expertPage.waitForTimeout(2000);
     const postNavTabs = expertPage.locator(".nav-tabs");
     const timesheetTab = postNavTabs.locator("a:has-text('Timesheet')");
     await expect(timesheetTab).toBeVisible();
   });
 
-  test("Logging time for job", async ({ expertPage, expertHomePage }) => {
-    await expertPage.goto(`/en/dashboard/managework/jobs/`, {
+  test("TC_011: Logging time for job", async ({ 
+    expertPage, 
+    expertHomePage,
+    expertPTJPage 
+  }) => {
+    await expertPage.goto("/en/dashboard/managework/jobs/", {
       waitUntil: "networkidle",
     });
-    const activePost = expertPage.locator("a:has-text('Active jobs')");
-    await activePost.click();
-    await expect(activePost).toBeVisible();
-    await expertPage.waitForLoadState("networkidle");
-
-    const postCard = expertPage.locator("div.post-back.recent-back").filter({
-      hasText: PTJPostName,
-    });
-    await expect(postCard).toBeVisible();
-    await postCard.click();
-
-    const logTimeButton = expertPage.getByRole("button", {
-      name: "+ Log time",
-    });
-    await logTimeButton.click();
-
-    const timeLogMessage = await expertPage.getByPlaceholder(
-      "What have you worked on?",
+    await expertPTJPage.openActiveJobsTab();
+    await expertPTJPage.openActiveJob(PTJPost_Name);
+    await expertPTJPage.clickLogTime();
+    await expertPTJPage.enterWorkLogDescription(
+      "This is my first work logging"
     );
-    await timeLogMessage.fill("This is my first work logging");
-
-    // ---------- START TIME ----------
-    await expertPage
-      .locator(".form-group")
-      .filter({ hasText: "Start Time" })
-      .locator(".rs-picker-toggle-wrapper")
-      .click();
-
-    const startPopup = expertPage.locator(".rs-picker-popup-date").last();
-    await expect(startPopup).toBeVisible();
-
-    const startHour = startPopup.locator('[data-key="hours-10"]');
-    await startHour.scrollIntoViewIfNeeded();
-    await startHour.click();
-
-    const startMinute = startPopup.locator('[data-key="minutes-30"]');
-    await startMinute.scrollIntoViewIfNeeded();
-    await startMinute.click();
-
-    await startPopup.getByRole("option", { name: "AM" }).click();
-    await startPopup.getByRole("button", { name: "OK" }).click();
-
-    // Wait for start popup to fully close before opening end picker
-    await expect(startPopup).toBeHidden();
-
-    // ---------- END TIME ----------
-    await expertPage
-      .locator(".form-group")
-      .filter({ hasText: "End Time" })
-      .locator(".rs-picker-toggle-wrapper")
-      .click();
-
-    const endPopup = expertPage.locator(".rs-picker-popup-date").last();
-    await expect(endPopup).toBeVisible();
-
-    const endHour = endPopup.locator('[data-key="hours-4"]');
-    await endHour.scrollIntoViewIfNeeded();
-    await endHour.click();
-
-    const endMinute = endPopup.locator('[data-key="minutes-30"]');
-    await endMinute.scrollIntoViewIfNeeded();
-    await endMinute.click();
-
-    await endPopup.getByRole("option", { name: "PM" }).click();
-    await endPopup.getByRole("button", { name: "OK" }).click();
-
-    await expect(endPopup).toBeHidden();
-
-    function getCurrentDate() {
-      return new Date().toISOString().split('T')[0];
-    }
-
-    await expertPage.locator("#date").fill(getCurrentDate());
-    const totalHours = expertPage
-      .locator(".form-group")
-      .filter({ hasText: "Total hours" })
-      .locator("h6");
-
-    await expect(totalHours).toHaveText("6:00");
-
-    const logTimeBtn = expertPage.getByRole("button", { name: "Log time" });
-    await logTimeBtn.click();
+    await expertPTJPage.selectStartTime("10", "30", "AM");
+    await expertPTJPage.selectEndTime("4", "30", "PM");
+    const current_date = await expertHomePage.getCurrentDate();
+    await expertPTJPage.selectWorkDate(current_date);
+    await expertPTJPage.verifyTotalHours("6:00");
+    await expertPTJPage.clickLogTimeButton();
     await expertPage.waitForTimeout(2000);
   });
 
-  test("to verify whether pending sheet has logged time in sheet ", async ({
+  test("TC_012: to verify whether pending sheet has logged time in sheet ", async ({
     expertPage,
     expertHomePage,
+    expertPTJPage
   }) => {
-    await expertPage.goto(`/en/dashboard/managework/jobs/`, {
+    await expertPage.goto("/en/dashboard/managework/jobs/", {
       waitUntil: "networkidle",
     });
-    const activePost = expertPage.locator("a:has-text('Active jobs')");
-    await activePost.click();
-    await expect(activePost).toBeVisible();
-    await expertPage.waitForLoadState("networkidle");
-
-    const postCard = expertPage.locator("div.post-back.recent-back").filter({
-      hasText: PTJPostName,
-    });
-    await expect(postCard).toBeVisible();
-    await postCard.click();
-    const logTimeButton = expertPage.getByRole("button", {
-      name: "+ Log time",
-    });
-    await logTimeButton.click();
-
-    // Verify "Pending Sheets" tab is active
-    const pendingSheetTab = expertPage.locator("button, a", {
-      hasText: "Pending Sheets",
-    });
-
-    function getFormattedDate() {
-    const date = new Date();
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
-  }
-
-    await expect(pendingSheetTab).toHaveClass(/active/);
-    const dateUpdated = expertPage.locator("h6", { hasText: getFormattedDate() });
-    await expect(dateUpdated).toBeVisible();
-    const totalHours = dateUpdated.locator("span", {
-      hasText: "Total : 06:00:00",
-    });
-    await expect(totalHours).toBeVisible;
-    // Target the specific row by description text
-    const logRow = expertPage.locator("div.mockup-row", {
-      hasText: "This is my first work logging",
-    });
-    await expect(logRow).toBeVisible();
-
-    // Verify description
-    await expect(logRow.locator("div.col-md-3 p").first()).toHaveText(
-      "This is my first work logging",
+    await expertPTJPage.openActiveJobsTab();
+    await expertPTJPage.openActiveJob(PTJPost_Name);
+    await expertPTJPage.clickLogTime();
+    await expertPTJPage.verifyPendingSheetsTab();
+    const currentDate = await expertHomePage.getCurrentDate_DMY();
+    const dateLocator =
+      await expertPTJPage.verifyLoggedDate(
+        currentDate
+      );
+    await expertPTJPage.verifyLoggedHours(
+      dateLocator,
+      "Total : 06:00:00"
     );
-
-    // Verify start and end time (both are inside the same col-md-3 mockup-center div)
-    const timeCell = logRow.locator("div.mockup-center");
-    await expect(timeCell.locator("p").nth(0)).toHaveText("10:30 AM");
-    await expect(timeCell.locator("p").nth(1)).toHaveText("4:30 PM");
-
-    // Verify total worked hours
-    await expect(logRow.locator("div.mockup-right h5")).toHaveText("06:00:00");
-
-    // Verify status
-    await expect(logRow.locator("p.pending")).toHaveText("Pending");
+    await expertPTJPage.verifyLogEntry(
+      "This is my first work logging",
+      "10:30 AM",
+      "4:30 PM",
+      "06:00:00",
+      "Pending"
+    );
   });
 });

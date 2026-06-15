@@ -40,7 +40,7 @@ export default class HomePage extends BasePage {
     .locator("a:has-text('Let’s get started')")
     .nth(2);
 
-    this.logo = page.locator("//div[@class='logo']");
+    this.logo = page.locator("//div[@class='logo']//img");
     this.part_time_jobs_tab = page.locator(
       "//li/a[contains(text(),'Part-Time Jobs')]",
     );
@@ -113,6 +113,15 @@ export default class HomePage extends BasePage {
     this.post_job_name_in_part_time_job = page.locator("(//h4[contains(text(),'Posted Part time Job')]/parent::div/following-sibling::div)[1]//h1/parent::div//h3")
     this.purchase_order = page.locator("//a[contains(.,'Purchased orders')]");
     this.active_order = page.locator("//a[contains(.,'Active orders')]");
+    this.orderSummary = this.page.locator("//h6[contains(text(),'Order summary')]");
+    this.makePaymentBtn = this.page.locator("button", { hasText: "Make Payment" });
+    this.saveAndMakePaymentBtn = this.page.locator("button", { hasText: "Save and make payment" });
+    this.cardNumberFrame = this.page.frameLocator('iframe[title="Card Number"]');
+    this.cvvFrame = this.page.frameLocator('iframe[title="Security Code CVV"]');
+    this.expiryDate = this.page.locator('input[placeholder="MM / YY"]');
+    this.cardHolder = this.page.locator('input[placeholder="Card holder"]');
+    this.payNowBtn = this.page.getByRole("button", { name: "Pay now" });
+    this.finalPayBtn = this.page.locator('input[value="Pay"]');
   } 
 
   async navigateToPartTimeJobsFromHomepage() {
@@ -157,7 +166,7 @@ export default class HomePage extends BasePage {
     await expect(this.page).toHaveURL(
       "https://urxprt.com/en/searchbuyproducts",
     );
-    await this.page.waitForLoadState("networkidle");
+    // await this.page.waitForLoadState("networkidle");
   }
 
   async gotoOSMViaCard() {
@@ -365,6 +374,21 @@ export default class HomePage extends BasePage {
     await expect(this.dashboard_button).toBeVisible();
     await this.dashboard_button.click();
   }
+
+  async getCurrentDate() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  async getCurrentDate_DMY() {
+    const today = new Date();
+    return today.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
+  }
+
+
   async gotoReceivedOrders() {
     {
       await this.page
@@ -374,6 +398,22 @@ export default class HomePage extends BasePage {
         "https://urxprt.com/en/dashboard/receivedorders",
       );
     }
+  }
+
+  async goToOrderType(order) {
+    await this.page.locator("//h2[.='My Orders']/parent::div/ul/li/a[contains(.,'"+ order +"')]").click();
+  } 
+
+  async goToReceivedOrderType(order) {
+    await this.page.locator("//h2[.='Received Orders']/parent::div/ul/li/a[contains(.,'"+ order +"')]").click();
+  } 
+
+  async goToSubOrderType(subOrder) {
+    await this.page.locator("(//h2[.='My Orders']/parent::div/following-sibling::div//ul)[1]/li/a[contains(.,'"+subOrder+"')]").click();
+  }
+
+  async goToSubReceivedOrderType(subOrder) {
+    await this.page.locator("(//h2[.='Received Orders']/parent::div/following-sibling::div//ul)[2]/li/a[contains(.,'"+subOrder+"')]").click();
   }
 
   async navigateToMyOrdersViaPreview() {
@@ -406,6 +446,88 @@ export default class HomePage extends BasePage {
   async goToActivePurchaseOrder() {
     await this.purchase_order.click();
     await this.active_order.click();
+  }
+
+  async proceedToPayment() {
+    await expect(this.orderSummary).toBeVisible();
+    await expect(this.makePaymentBtn).toBeVisible();
+    await this.makePaymentBtn.click();
+    await this.saveAndMakePaymentBtn.click();
+    await this.page.waitForTimeout(5000);
+  }
+
+  async enterCardDetails(cardNumber, expiry, holderName, cvv) {
+    await expect(this.page.locator('iframe[title="Card Number"]')).toBeVisible();
+    await this.cardNumberFrame.locator('input[name="card.number"]').fill(cardNumber);
+    await this.expiryDate.fill(expiry);
+    await this.cardHolder.fill(holderName);
+    await this.cvvFrame.locator('input[name="card.cvv"]').fill(cvv);
+  }
+
+  async completePayment() {
+    await Promise.all([
+      this.page.waitForURL("**oppwa.com/**"),
+      this.payNowBtn.click(),
+    ]);
+    await this.page.waitForLoadState("networkidle");
+    await this.finalPayBtn.click();
+    await this.page.waitForTimeout(500);
+  }
+
+  async gotoMyOrdersWBO() {
+    await this.page.goto(`/en/dashboard`, { waitUntil: "networkidle" });
+    await this.page.locator("a", { hasText: "My Orders" }).click();
+    const orderTabs = this.page
+      .locator("#MyOrderPostedorders")
+      .locator(".order-tabs");
+    await orderTabs.locator("a", {
+      hasText: "Win business Opportunities (WBO)",
+      exact: false,
+    }).click();
+  }
+
+  async verifyNotification(notificationText) {
+    const notification = this.page
+      .locator(`//h6[normalize-space()='${notificationText}']`)
+      .first();
+
+    await expect(notification).toBeVisible();
+  }
+
+  async gotoMyOrdersPTJ() {
+    await this.page.goto("/en/dashboard", {
+      waitUntil: "networkidle",
+    });
+    await this.page.locator("a", {
+      hasText: "My Orders",
+    }).click();
+    const orderTabs = this.page
+      .locator("#MyOrderPostedorders")
+      .locator(".order-tabs");
+    await orderTabs.locator("a", {
+      hasText: "Part time Job (PTJ)",
+      exact: false,
+    }).click();
+    await expect(
+      this.page.locator("h4", {
+        hasText: "Posted Part time Job (PTJ)",
+      })
+    ).toBeVisible();
+  }
+
+  async openPTJOrder(postName) {
+    const orderCard = this.page.locator("h3", {
+      hasText: postName,
+    });
+    await expect(orderCard).toBeVisible();
+    await orderCard.click();
+  }
+  
+  async openPTJManageWork() {
+    await this.gotoDashboardPage();
+    await this.page.locator("a", {
+      hasText: "Part time Job (PTJ)",
+    }).click();
   }
 
 }

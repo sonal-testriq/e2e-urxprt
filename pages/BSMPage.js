@@ -166,5 +166,355 @@ export default class BSMPage extends BasePage {
     await expect(this.coding_option).toBeVisible();
     await this.coding_option.click();
   }
+
+  async clickAddProductPlan() {
+    const addBtn = this.page.locator('.packaged-first button:has-text("Add")');
+    await addBtn.click();
+    await expect(this.page.locator(".modal-overlay-sec.active")).toBeVisible();
+  }
   
+  async clickNextButtonOnProductDetailTab() {
+    const nextBtn = this.page.locator("//button[contains(text(),'Next')]");
+    await nextBtn.click();
+  }
+
+  async verifyUserIsOnProductInfoTab() {
+    const productInfoTab = this.page.locator("a", { hasText: "Product info" });
+    await expect(productInfoTab).toHaveClass(/active nav-link/);
+  }
+
+  async insertImage(file) {
+    await this.page.locator(".dropzone").locator('input[type="file"]')
+      .setInputFiles(file);
+    await expect(this.page.locator("//img[@alt='Delete']")).toBeVisible();
+  }
+
+  async clickNextButtonOnProductInfoTab() {
+    await this.page.locator(".add-education-modal .tab-pane.active").locator(".next-button").click();
+  }
+
+  async addAndPublishPost() {
+    const publishBtn = await this.page.getByRole("button", {
+      name: "Add and Publish",
+    });
+    await expect(publishBtn).toBeVisible();
+    await publishBtn.click();
+  }
+
+  async goToBSMPost(BSMProductName) {
+    const BSMpost = await this.page.locator("div.packaged-img").filter({
+     has: this.page.locator(`h6:text-is("${BSMProductName}")`),
+    });
+    const [newPage] = await Promise.all([this.page.context().waitForEvent("page"), BSMpost.click() ]);
+    return newPage;
+  }
+
+  async clickOnSendRequest(newPage) {
+    await newPage.locator("//button[contains(text(),'Send request')]").click();
+    await newPage.waitForLoadState("networkidle");
+  }
+
+  async acceptOfferForPost(newPage) {
+    await newPage.locator("label[for='agree']").click();
+    await newPage.waitForTimeout(500);
+    const scrollToBottomBtn = newPage.locator(".popup-contract-container").locator("button", {
+        name: "Scroll to Bottom",
+        exact: true,
+      });
+    await scrollToBottomBtn.click();
+    await newPage.waitForTimeout(500);
+    await newPage.locator(".popup-contract-container").locator("input[id='agree']").click();
+    await newPage.waitForLoadState("networkidle");
+    await newPage.waitForTimeout(500);
+    const acceptTermsButton = newPage.locator("button", {
+      hasText: "Accept",
+    });
+    await acceptTermsButton.click();
+    await newPage.waitForTimeout(500);
+  }
+
+  async verifySuccessMessageIsDisplayed(text, newPage) {
+    await expect(newPage.locator(".custom-popup.alert.alert-success")).toBeVisible();
+    const message = await newPage.locator(".custom-popup.alert.alert-success").textContent();
+    expect(message).toContain(text);
+  }
+
+  async verifyUserIsOnBSMRequestPage() {
+    const bsmRequestsHeader = await this.page.locator("#Orderequests").locator(".pending-req h4", {
+        hasText: "Buy & Sell with Market (BSM) requests",
+      });
+    await expect(bsmRequestsHeader).toBeVisible();
+  }  
+
+  async clickOnAcceptButtonOnBSMRequestPost(BSMProductName) {
+    const postRow = await this.page.locator("div.pending-img", {
+          hasText: BSMProductName,
+        });
+    await postRow.getByRole("button", { name: "Accept" }).click();
+  }
+
+  async acceptOffer() {
+    await this.page.locator("label[for='agree']").click();
+    await this.page.waitForTimeout(500);
+    const scrollToBottomBtn = this.page.locator(".popup-contract-container").locator("button", {
+        name: "Scroll to Bottom",
+        exact: true,
+      });
+    await scrollToBottomBtn.click();
+    await this.page.waitForTimeout(500);
+    await this.page.locator(".popup-contract-container").locator("input[id='agree']").click();
+    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForTimeout(500);
+    const acceptTermsButton = this.page.locator("button", {
+      hasText: "Accept",
+    });
+    await acceptTermsButton.click();
+    await this.page.waitForTimeout(500);
+  }
+
+  async openPurchasedBSMOrder(productName) {
+    await this.page.locator("div.order-first a", {
+      hasText: "Purchased orders",
+    }).click();
+    await this.page.locator("a", {
+      hasText: "Active orders",
+      exact: false,
+    }).click();
+    const postRow = this.page.locator("div.pending-img", {
+      hasText: productName,
+    });
+    await postRow.locator("button.btn-img").click();
+    await expect(this.page).toHaveURL(
+      /.*\/myorders\/productforsaledetails\//
+    );
+  }
+
+  async clickPayNow() {
+    await this.page.locator("div.status-right span", {
+      hasText: "Pay Now",
+    }).click();
+    await expect(
+      this.page.locator("div.modal.fade.show")
+    ).toBeVisible();
+    await this.page.locator("div.modal-content button", {
+      hasText: "Confirm",
+    }).click();
+  }
+
+  async verifyPaymentPage() {
+    await expect(this.page).toHaveURL(
+      "https://urxprt.com/en/account/paymentmethodpage"
+    );
+  }
+
+  async verifyBSMPaymentSuccess() {
+    await expect(
+      this.page.getByText("BSM Payment Completed").first()
+    ).toBeVisible();
+  }
+
+  async clickOkayAfterPayment() {
+    await this.page.locator("button", {
+      hasText: "Okay",
+    }).click();
+  }
+
+  async clickAddAddress() {
+    await this.page.locator("div.status-right span", {
+      hasText: "Add Address",
+    }).click();
+    await expect(
+      this.page.locator("div.modal.fade.show")
+    ).toBeVisible();
+  }
+
+  async submitAddress(address) {
+    await this.fillInputWithPlaceholder(
+      "Enter address",
+      address
+    );
+    await this.page.locator("div.modal-content button", {
+      hasText: "Submit",
+    }).click();
+  }
+
+  async openReceivedBSMOrder(productName) {
+    const postRow = this.page.locator("div.pending-img", {
+      hasText: productName,
+    });
+    await postRow.locator("button.btn-img").click();
+    await expect(this.page).toHaveURL(
+      /.*\/receivedorders\/productforsaledetails\//
+    );
+  }
+
+  async openActiveBSMReceivedOrders() {
+    await this.page.locator(".nav-tabs a", {
+      hasText: "Active orders",
+      exact: false,
+    }).click();
+    await this.page.locator("#Activeorders .order-tabs a", {
+      hasText: "Buy & Sell with Market (BSM)",
+      exact: false,
+    }).click();
+  }
+
+  async updateOutForDelivery() {
+    await this.page.locator("div.status-right span", {
+      hasText: "Update Out for Delivery",
+    }).click();
+    await expect(
+      this.page.locator("div.modal.fade.show")
+    ).toBeVisible();
+    await this.page.locator("div.modal-content button", {
+      hasText: "Confirm",
+    }).click();
+  }
+
+  async clickMarkDelivered() {
+    await this.page.locator("div.status-right span", {
+      hasText: "Mark Delivered",
+    }).click();
+    await expect(
+      this.page.locator("div.modal.fade.show")
+    ).toBeVisible();
+    await this.page.locator("div.modal-content button", {
+      hasText: "Confirm",
+    }).click();
+  }
+
+  async verifyItemDeliveredStep() {
+    const step4 = this.page.locator("div.status-first").filter({
+      has: this.page.locator("h6", {
+        hasText: "Item Delivered",
+      }),
+    });
+    await expect(
+      step4.locator("div.number.complete span")
+    ).toHaveText("4");
+    await expect(
+      step4.locator("div.deliveryotp-sec")
+    ).toBeVisible();
+  }
+
+  async openPurchasedActiveBSMOrder(productName) {
+    await this.page.locator("div.order-first a", {
+      hasText: "Purchased orders",
+    }).click();
+    await this.page.locator("a", {
+      hasText: "Active orders",
+      exact: false,
+    }).click();
+    const postRow = this.page.locator("div.pending-img", {
+      hasText: productName,
+    });
+    await postRow.locator("button.btn-img").click();
+    await expect(this.page).toHaveURL(
+      /.*\/myorders\/productforsaledetails\//
+    );
+  }
+
+  async enterOTP(otp) {
+    await this.page.locator("input[name='otp']").fill(otp);
+  }
+
+  async submitOTP() {
+    await this.page.locator("button", {
+      hasText: "Submit",
+    }).click();
+    await expect(
+      this.page.locator("div.modal.fade.show")
+    ).toBeVisible();
+    await this.page.locator("div.modal-content button", {
+      hasText: "Confirm",
+    }).click();
+  }
+
+  async verifyTransactionCompletedStep() {
+    const step5 = this.page.locator("div.status-first").filter({
+      has: this.page.locator("h6", {
+        hasText: "Transaction Complete",
+      }),
+    });
+    await expect(
+      step5.locator("div.number.complete span")
+    ).toHaveText("5");
+  }
+
+  async openCompletedPurchasedBSMOrder(productName) {
+    await this.page.locator("div.order-first a", {
+      hasText: "Completed",
+    }).click();
+    await this.page.locator("#MyOrderCompleted .order-tabs a", {
+      hasText: "Buy & Sell with Market (BSM)",
+      exact: false,
+    }).click();
+    const postRow = this.page.locator("div.pending-img", {
+      hasText: productName,
+    });
+    await postRow.locator("button.btn-img").click();
+    await expect(this.page).toHaveURL(
+      /.*\/receivedorders\/productforsaledetails\//
+    );
+  }
+
+  async openCompletedBSMReceivedOrders() {
+    await this.page.locator(".nav-tabs a", {
+      hasText: "completed",
+      exact: false,
+    }).click();
+    await this.page.locator(".completed-tab-sec a", {
+      hasText: "Buy & Sell with Market (BSM)",
+      exact: false,
+    }).click();
+  }
+
+  async verifyCompletedProduct(productName) {
+    const postRow = this.page.locator("div.pending-img", {
+      hasText: productName,
+    });
+    await expect(
+      postRow.locator("h5").first()
+    ).toHaveText(productName);
+    return postRow;
+  }
+
+  async relistProduct(productName) {
+    const postRow = await this.verifyCompletedProduct(
+      productName
+    );
+    await postRow.locator("button", {
+      hasText: "Re-list",
+    }).click();
+  }
+
+  async verifyRelistedProduct(productName) {
+    await expect(
+      this.page.getByText(
+        "BSM Service Created Successfully"
+      )
+    ).toBeVisible();
+    await this.page.goto(
+      "/en/searchbuyproducts",
+      { waitUntil: "networkidle" }
+    );
+    const productCard = this.page.locator(
+      "div.packaged-img",
+      {
+        hasText: productName,
+      }
+    );
+    await expect(productCard).toBeVisible();
+    await expect(
+      productCard.locator("h6")
+    ).toHaveText(productName);
+  }
+
+  async verifyUpdatedSuccessfully() {
+    await expect(
+      this.page.getByText("Updated Successfully")
+    ).toBeVisible();
+  }
+
+
 }

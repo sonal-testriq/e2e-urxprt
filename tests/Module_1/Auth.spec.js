@@ -3,8 +3,6 @@ import LoginPage from "../../pages/LoginPage.js";
 import credentials from "../../testData/credentials.json";
 import { authData } from "../../testData/constants.js";
 
-//npx playwright test AUTH.spec.js --config=playwright.no-setup.config.js
-
 test("TC_AUTH_001: Ensure validation prevents submitting blank credentials.", async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.openLoginPage();

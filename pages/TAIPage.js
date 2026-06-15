@@ -33,6 +33,7 @@ export default class TAIPage extends BasePage {
       "//div[contains(text(),'Search subcategories')]/parent::div/parent::div",
     );
     this.sc_option = page.getByRole("option", { name: "Strategy Consulting" });
+    this.success_message = page.locator(".custom-popup.alert.alert-success");
   }
   async addAProduct() {
     await this.addAProduct_button.click();
@@ -160,6 +161,12 @@ export default class TAIPage extends BasePage {
     await this.subcategory_filter.first().click();
     await expect(this.sc_option).toBeVisible();
     await this.sc_option.click();
+  }
+
+  async verifySuccessMessageIsDisplayed(text, newPage) {
+    await expect(newPage.locator(".custom-popup.alert.alert-success")).toBeVisible();
+    const message = await newPage.locator(".custom-popup.alert.alert-success").textContent();
+    expect(message).toContain(text);
   }
 
 }

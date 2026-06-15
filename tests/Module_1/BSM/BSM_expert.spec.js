@@ -15,17 +15,15 @@ test("TC_BSM_001: BSM page is accessible after login", async ({
 test("TC_BSM_002: Search filters return expected results", async ({
   expertPage,
   expertHomePage,
+  expertBSMPage
 }) => {
   await expertHomePage.gotoBSMViaCard();
   const randomText = "Cricket kit";
-  const search_box = expertPage.getByRole("textbox", { name: "Search BSM" });
-  const search_button = expertPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
-  const postNames = await expertPage.locator("//div[@class='packaged-img']//h6");
-  await postNames.first().waitFor();
-  await expertPage.waitForTimeout(1200);
-  const count = await postNames.count();
+  await expertBSMPage.searchFor(randomText);
+  const post_names = await expertBSMPage.postNames;
+  await post_names.first().waitFor();
+  await expertPage.waitForTimeout(500);
+  const count = await post_names.count();
   expect(count).toBeGreaterThanOrEqual(1);
 });
 

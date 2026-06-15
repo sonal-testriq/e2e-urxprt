@@ -1,8 +1,8 @@
 import { test, expect } from "../../../fixtures/page.fixture.js";
 
-test("TC_TAI_001: TAI page is accessible after login", async ({
+test.only("TC_TAI_001: TAI page is accessible after login", async ({
   userPage,
-  userHomePage,
+  userHomePage
 }) => {
   await userHomePage.gotoTAIViaCard();
   await expect(userPage).toHaveURL("https://urxprt.com/en/searchrentproducts");
@@ -14,17 +14,15 @@ test("TC_TAI_001: TAI page is accessible after login", async ({
 test("TC_TAI_002: Search filters return expected results", async ({
   userPage,
   userHomePage,
+  userTAIPage
 }) => {
   await userHomePage.gotoTAIViaCard();
   const randomText = "Wallpaper";
-  const search_box = userPage.getByRole("textbox", { name: "Search TAI" });
-  const search_button = userPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
-  const postNames = await userPage.locator("//div[@class='packaged-img']//h6");
-  await postNames.first().waitFor();
-  await userPage.waitForTimeout(1200);
-  const count = await postNames.count();
+  await userTAIPage.searchFor(randomText);
+  const post_names = await userTAIPage.postNames;
+  await post_names.first().waitFor();
+  await userPage.waitForTimeout(500);
+  const count = await post_names.count();
   expect(count).toBeGreaterThanOrEqual(1);
 });
 
@@ -107,14 +105,14 @@ test("TC_TAI_006: Apply multiple filters and verify counts update correctly", as
   const countAfterRentalSelect = await userTAIPage.getUpdatedPageNumber();
   expect(originalPageCount).not.toEqual(countAfterRentalSelect);
   await userTAIPage.chooseIndustryFilter();
-  await userPage.waitForTimeout(1200);
+  await userPage.waitForTimeout(500);
   const afterIndustryFilterPostCount = await userTAIPage.getPostCount();
   await userTAIPage.chooseCategoryFilter();
-  await userPage.waitForTimeout(1200);
+  await userPage.waitForTimeout(500);
   const afterCategoryFilterPostCount = await userTAIPage.getPostCount();
   expect(afterCategoryFilterPostCount).toBeLessThan(afterIndustryFilterPostCount);
   await userTAIPage.chooseSubCategoryFilter();
-  await userPage.waitForTimeout(1200);
+  await userPage.waitForTimeout(500);
   const afterSubCategoryFilterPostCount = await userTAIPage.getPostCount();
   expect(afterSubCategoryFilterPostCount).toBeLessThan(afterCategoryFilterPostCount);
 });

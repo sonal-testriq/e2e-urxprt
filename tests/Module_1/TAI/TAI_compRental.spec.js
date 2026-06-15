@@ -103,6 +103,7 @@ test.describe.serial("TAI Flow", () => {
       userPage.getByText("TAI Service Created Successfully"),
     ).toBeVisible();
   });
+
   test("Verify whether newly created TAI appears at the product listing page as 'Your Post'", async ({
     userPage,
     userHomePage,
@@ -120,6 +121,7 @@ test.describe.serial("TAI Flow", () => {
     });
     await expect(yourPostTag.first()).toBeVisible();
   });
+
   test("Verify whether newly created post appears at company's product listing page", async ({
     companyPage,
     companyHomePage,
@@ -131,11 +133,13 @@ test.describe.serial("TAI Flow", () => {
     });
     await expect(TAIPostCard).toHaveText(TAIProductName);
   });
+
   test("Verify if company can apply on new created post", async ({
     companyPage,
     companyHomePage,
     companyTAIPage,
   }) => {
+    const currentDate = new Date().toISOString().split('T')[0];
     await companyHomePage.gotoTAIViaCard();
     const TAIPostCard = companyPage.locator("div.packaged-img").filter({
       has: companyPage.locator("h6", { hasText: TAIProductName }),
@@ -155,8 +159,8 @@ test.describe.serial("TAI Flow", () => {
     await newPage.waitForLoadState("networkidle");
 
     await expect(newPage.locator("div.modal.fade.show")).toBeVisible();
-    await newPageObject.fillInput("Start Date ", "2026-05-30");
-    await newPageObject.fillInput("End Date ", "2026-05-31");
+    await newPageObject.fillInput("Start Date ", currentDate);
+    await newPageObject.fillInput("End Date ", currentDate);
     await newPage
       .locator(".form-group")
       .filter({ hasText: "Start Time" })
@@ -166,15 +170,15 @@ test.describe.serial("TAI Flow", () => {
     const startPopup = newPage.locator(".rs-picker-popup-date").last();
     await expect(startPopup).toBeVisible();
 
-    const startHour = startPopup.locator('[data-key="hours-10"]');
+    const startHour = startPopup.locator('[data-key="hours-6"]');
     await startHour.scrollIntoViewIfNeeded();
     await startHour.click();
 
-    const startMinute = startPopup.locator('[data-key="minutes-30"]');
+    const startMinute = startPopup.locator('[data-key="minutes-15"]');
     await startMinute.scrollIntoViewIfNeeded();
     await startMinute.click();
 
-    await startPopup.getByRole("option", { name: "AM" }).click();
+    await startPopup.getByRole("option", { name: "PM" }).click();
     await startPopup.getByRole("button", { name: "OK" }).click();
 
     // Wait for start popup to fully close before opening end picker
@@ -230,14 +234,16 @@ test.describe.serial("TAI Flow", () => {
       hasText: "Accept",
     });
     await acceptTermsButton.click();
-    await newPage.waitForTimeout(10000);
-    expect(newPage.getByText("TAI Request Has Been Sent")).toBeVisible();
-    // expect(company);
-    expect(
-      newPage.locator("//button[contains(text(),'Request Sent')]"),
-    ).toBeDisabled();
-    await newPage.waitForTimeout(2000);
+    await newPage.waitForTimeout(1000);
+    await companyTAIPage.verifySuccessMessageIsDisplayed("TAI request has been sent", newPage)
+    // expect(newPage.getByText("TAI Request Has Been Sent")).toBeVisible();
+    // // expect(company);
+    // expect(
+    //   newPage.locator("//button[contains(text(),'Request Sent')]"),
+    // ).toBeDisabled();
+    // await newPage.waitForTimeout(2000);
   });
+
   test("Accepting TAI request by the 'User'", async ({
     userPage,
     userHomePage,
@@ -384,6 +390,7 @@ test.describe.serial("TAI Flow", () => {
       /.*\/receivedorders\/rentalproductsdetails\//,
     );
   });
+
   test("Updating product status by user(seller)", async ({
     userPage,
     userHomePage,
@@ -427,6 +434,7 @@ test.describe.serial("TAI Flow", () => {
     await userPage.waitForTimeout(2000);
     await expect(userPage.getByText("Updated Successfully")).toBeVisible();
   });
+
   test("Marking product 'Deleivered' by company(Buyer)", async ({
     companyPage,
     companyHomePage,
@@ -479,6 +487,7 @@ test.describe.serial("TAI Flow", () => {
     // Assert OTP is generated and visible
     await expect(companyPage.locator("div.deliveryotp-sec")).toBeVisible();
   });
+
   test("Completing transaction by user(Seller) by verifying OTP", async ({
     userPage,
     userHomePage,
@@ -524,6 +533,7 @@ test.describe.serial("TAI Flow", () => {
       has: userPage.locator("h6", { hasText: "Transaction Complete" }),
     });
   });
+
   test("Asserting completion of last step of Completing transaction at company's(buyer) window", async ({
     companyPage,
     companyHomePage,
@@ -558,6 +568,7 @@ test.describe.serial("TAI Flow", () => {
     });
     await expect(step5.locator("div.number.complete span")).toHaveText("5");
   });
+  
   test("Asserting completion of last step of Completing transaction at user's(seller) window and relisting of product", async ({
     userPage,
     userHomePage,

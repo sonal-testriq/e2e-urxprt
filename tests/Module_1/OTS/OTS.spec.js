@@ -7,7 +7,6 @@ test("TC_OTS_001: OTS page is accessible after login", async ({
 }) => {
   await userHomePage.gotoOSMViaCard();
   await expect(userPage).toHaveURL("https://urxprt.com/en/searchpackaged");
-
   await userHomePage.gotoHomepage();
   await userHomePage.goToOTSViaHeader();
   await expect(userPage).toHaveURL("https://urxprt.com/en/searchpackaged");
@@ -16,17 +15,15 @@ test("TC_OTS_001: OTS page is accessible after login", async ({
 test("TC_OTS_002: Search filters return expected results", async ({
   userPage,
   userHomePage,
+  userOTSPage
 }) => {
   await userHomePage.gotoOSMViaCard();
   const randomText = "Car service";
-  const search_box = userPage.getByRole("textbox", { name: "Search OTS" });
-  const search_button = userPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
-  const postNames = await userPage.locator("//div[@class='packaged-img']//h6");
-  await postNames.first().waitFor();
+  await userOTSPage.searchFor(randomText);
+  const post_names = await userOTSPage.postNames;
+  await post_names.first().waitFor();
   await userPage.waitForTimeout(1200);
-  const count = await postNames.count();
+  const count = await post_names.count();
   expect(count).toBeGreaterThanOrEqual(1);
 });
 
@@ -154,8 +151,7 @@ test("TC_OTS_008: Verify Expert user is not able to add a service with empty or 
       "Category is required",
       "Duration is required"
     ];
-    await expertPage.locator(".error").first().waitFor();
-    const errorMessages = await expertPage.locator(".error").allTextContents();
+    const errorMessages = await expertOTSPage.getErrorMessage();
     for (const expected of expectedErrors) {
       expect(errorMessages).toContain(expected);
     }
@@ -211,10 +207,7 @@ test("TC_OTS_010: Verify Expert user is not able to save and publish service wit
   await expertOTSPage.clickOnNextButtonOnWorkSampleTab();
   await expertPage.waitForTimeout(500);
   await expertOTSPage.saveAndPublishService();
-  const expectedErrors = [
-    "Price is required",
-    "This is required",
-  ];
+  const expectedErrors = [ "Price is required", "This is required",];
   await expertPage.locator(".error").first().waitFor();
   const errorMessages = await expertPage.locator(".error").allTextContents();
   for (const expected of expectedErrors) {

@@ -1,6 +1,6 @@
 // fixtures/pages.fixture.js
 import { test as authTest } from "./auth.fixture.js";
-import PTJPage from "../pages/part-time-job.page.js";
+import PTJPage from "../pages/PTJPage.js";
 import PBPPage from "../pages/PBPPage.js";
 import WBOPage from "../pages/WBOPage.js";
 import BSMPage from "../pages/BSMPage.js";
@@ -23,10 +23,6 @@ export const test = authTest.extend({
   // Company's Job Post page (company posts jobs differently)
   expertHomePage: async ({ expertPage }, use) => {
     await use(new HomePage(expertPage));
-  },
-
-  companyHomePage: async ({ companyPage }, use) => {
-    await use(new HomePage(companyPage));
   },
 
   // Expert's Job Post page object — authenticated + page object in one
@@ -103,6 +99,16 @@ export const test = authTest.extend({
   // User's WBO page object
   userWBOPage: async ({ userPage }, use) => {
     await use(new WBOPage(userPage));
+  },
+
+  // User's WBO page object
+  expertWBOPage: async ({ expertPage }, use) => {
+    await use(new WBOPage(expertPage));
+  },
+
+  // User's WBO page object
+  companyWBOPage: async ({ companyPage }, use) => {
+    await use(new WBOPage(companyPage));
   },
 
   // Expert's PBP page object

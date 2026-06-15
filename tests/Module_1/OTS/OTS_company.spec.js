@@ -1,4 +1,5 @@
 import { test, expect } from "../../../fixtures/page.fixture";
+import { pageRoutes, OTS_ServiceName } from "../../../testData/constants.js";
 
 test("TC_OTS_001: OTS page is accessible after login", async ({
   companyPage,
@@ -6,7 +7,6 @@ test("TC_OTS_001: OTS page is accessible after login", async ({
 }) => {
   await companyHomePage.gotoOSMViaCard();
   await expect(companyPage).toHaveURL("https://urxprt.com/en/searchpackaged");
-
   await companyHomePage.gotoHomepage();
   await companyHomePage.goToOTSViaHeader();
   await expect(companyPage).toHaveURL("https://urxprt.com/en/searchpackaged");
@@ -15,17 +15,15 @@ test("TC_OTS_001: OTS page is accessible after login", async ({
 test("TC_OTS_002: Search filters return expected results", async ({
   companyPage,
   companyHomePage,
+  companyOTSPage
 }) => {
   await companyHomePage.gotoOSMViaCard();
   const randomText = "Car service";
-  const search_box = companyPage.getByRole("textbox", { name: "Search OTS" });
-  const search_button = companyPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
-  const postNames = await companyPage.locator("//div[@class='packaged-img']//h6");
-  await postNames.first().waitFor();
+  await companyOTSPage.searchFor(randomText);
+  const post_names = await companyOTSPage.postNames;
+  await post_names.first().waitFor();
   await companyPage.waitForTimeout(1200);
-  const count = await postNames.count();
+  const count = await post_names.count();
   expect(count).toBeGreaterThanOrEqual(1);
 });
 
@@ -122,4 +120,108 @@ test("TC_OTS_006: Apply multiple filters and verify counts update correctly", as
   const updatedPostCount = await companyOTSPage.getPostCount();
   expect(updatedPostCount).toBeLessThan(postCount);
 });
+
+test.describe.serial("OTS Tests for Company Role", () => {
+  test("TC_OTS_007: Verify Company user is able to add a service", async ({
+    companyPage,
+    companyHomePage,
+    companyOTSPage,
+  }) => {
+    await companyHomePage.gotoOSMViaCard();
+    await companyOTSPage.clickOnCreateAPostButton();
+    await expect(companyPage).toHaveURL(/.*\/myotsproducts/);
+    await companyOTSPage.clickOnAddButtonOnAllServicesPage();
+    await companyPage.waitForTimeout(500);
+    await companyOTSPage.fillInput("Service Title ", OTS_ServiceName);
+    await companyPage.locator('input[type="file"]').setInputFiles('testData/sampleImg.jpg');
+    await expect(companyPage.locator("//img[@alt='Delete']")).toBeVisible();
+    await companyOTSPage.fillRichTextEditor("Description", "This is a sample description for the OTS service.");
+    await companyOTSPage.selectMultiDropdown("Industry *", ["E Commerce"]);
+    await companyOTSPage.selectMultiDropdown("Category *", ["Supply Chain"]);
+    await companyOTSPage.fillInput("No of Days", "10");
+    await companyOTSPage.fillRichTextEditor("Requirements", "This is a sample requirements for the OTS service.");
+    await companyPage.waitForTimeout(500);
+    await companyOTSPage.clickOnNextButtonOnServiceDetailsTab();
+    await companyPage.waitForTimeout(500);
+    await companyOTSPage.clickOnNextButtonOnWorkSampleTab();
+    await companyPage.waitForTimeout(500);
+    await companyOTSPage.fillInput("Price in $ *", "10");
+    await companyOTSPage.selectPaymentTerms("One time");
+    await companyOTSPage.fillRichTextEditor("Additional Notes / Terms", "This is a sample requirements for the OTS service.");
+    await companyPage.waitForTimeout(500);
+    await companyOTSPage.saveAndPublishService();
+    await companyOTSPage.verifySuccessMessageIsDisplayed("OTS service created successfully");
+  })
+
+  test("TC_OTS_008: Verify Company user is able to view created service in All Services", async ({
+    companyPage,
+    companyHomePage,
+    companyOTSPage,
+  }) => {
+    await companyHomePage.gotoOSMViaCard();
+    await companyOTSPage.clickOnCreateAPostButton();
+    await expect(companyPage).toHaveURL(/.*\/myotsproducts/);
+    await companyHomePage.selectServices("OTS");
+    await companyOTSPage.isServicePresent(OTS_ServiceName)
+  })
+
+  test("TC_OTS_009: Verify Company user is able to edit the create service", async ({
+    companyPage,
+    companyHomePage,
+    companyOTSPage,
+  }) => {
+    await companyHomePage.gotoOSMViaCard();
+    await companyOTSPage.clickOnCreateAPostButton();
+    await expect(companyPage).toHaveURL(/.*\/myotsproducts/);
+    await companyHomePage.selectServices("OTS");
+    await companyOTSPage.clickOnEditButton(OTS_ServiceName)
+    await companyPage.waitForTimeout(500);
+    await companyOTSPage.fillInput("Service Title ", OTS_ServiceName + " Updated");
+    await companyOTSPage.clickOnNextButtonOnServiceDetailsTab();
+    await companyOTSPage.clickOnNextButtonOnWorkSampleTab();
+    await companyOTSPage.saveAndPublishService();
+    await companyOTSPage.verifySuccessMessageIsDisplayed("OTS service updated successfully");
+    await companyOTSPage.isServicePresent(OTS_ServiceName + " Updated")
+    await companyOTSPage.clickOnEditButton(OTS_ServiceName + " Updated")
+    await companyPage.waitForTimeout(500);
+    await companyOTSPage.fillInput("Service Title ", OTS_ServiceName);
+    await companyOTSPage.clickOnNextButtonOnServiceDetailsTab();
+    await companyOTSPage.clickOnNextButtonOnWorkSampleTab();
+    await companyOTSPage.saveAndPublishService();
+    await companyOTSPage.verifySuccessMessageIsDisplayed("OTS service updated successfully");
+    await companyOTSPage.isServicePresent(OTS_ServiceName)
+  })
+
+  test("TC_OTS_010: Verify Company user is able to cancel the edit", async ({
+    companyPage,
+    companyHomePage,
+    companyOTSPage,
+  }) => {
+    await companyHomePage.gotoOSMViaCard();
+    await companyOTSPage.clickOnCreateAPostButton();
+    await expect(companyPage).toHaveURL(/.*\/myotsproducts/);
+    await companyHomePage.selectServices("OTS");
+    await companyOTSPage.clickOnEditButton(OTS_ServiceName)
+    await companyPage.waitForTimeout(500);
+    await companyOTSPage.closeAddServicesTab();
+    await companyOTSPage.verifyConfirmationPopupIsPresent("You have unsaved changes. Are you sure you want to cancel?")
+    await companyOTSPage.clickOnYesButton();
+  })
+
+  test("TC_OTS_011: Verify Company user is able to delete the create service", async ({
+    companyPage,
+    companyHomePage,
+    companyOTSPage,
+  }) => {
+    await companyHomePage.gotoOSMViaCard();
+    await companyOTSPage.clickOnCreateAPostButton();
+    await expect(companyPage).toHaveURL(/.*\/myotsproducts/);
+    await companyHomePage.selectServices("OTS");
+    await companyOTSPage.clickOnDeleteButton(OTS_ServiceName)
+    await companyOTSPage.verifyConfirmationPopupIsPresent("Confirm Delete")
+    await companyOTSPage.clickOnConfirmButton();
+    await companyOTSPage.verifySuccessMessageIsDisplayed("Your OTS service has been deleted");
+  })
+
+})
 

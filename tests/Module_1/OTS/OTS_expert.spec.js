@@ -7,7 +7,6 @@ test("TC_OTS_001: OTS page is accessible after login", async ({
 }) => {
   await expertHomePage.gotoOSMViaCard();
   await expect(expertPage).toHaveURL("https://urxprt.com/en/searchpackaged");
-
   await expertHomePage.gotoHomepage();
   await expertHomePage.goToOTSViaHeader();
   await expect(expertPage).toHaveURL("https://urxprt.com/en/searchpackaged");
@@ -16,17 +15,15 @@ test("TC_OTS_001: OTS page is accessible after login", async ({
 test("TC_OTS_002: Search filters return expected results", async ({
   expertPage,
   expertHomePage,
+  expertOTSPage
 }) => {
   await expertHomePage.gotoOSMViaCard();
   const randomText = "Car service";
-  const search_box = expertPage.getByRole("textbox", { name: "Search OTS" });
-  const search_button = expertPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
-  const postNames = await expertPage.locator("//div[@class='packaged-img']//h6");
-  await postNames.first().waitFor();
+  await expertOTSPage.searchFor(randomText);
+  const post_names = await expertOTSPage.postNames;
+  await post_names.first().waitFor();
   await expertPage.waitForTimeout(1200);
-  const count = await postNames.count();
+  const count = await post_names.count();
   expect(count).toBeGreaterThanOrEqual(1);
 });
 

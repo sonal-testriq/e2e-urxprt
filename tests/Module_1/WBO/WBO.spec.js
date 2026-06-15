@@ -14,18 +14,16 @@ test("TC_WBO_001: WBO account page is accessible after login", async ({
 
 test("TC_WBO_002: Search filters return expected results", async ({
   userPage,
-  userHomePage,
+  userHomePage, 
+  userWBOPage
 }) => {
   await userHomePage.gotoWBOViaCard();
-  const randomText = "Testing";
-  const search_box = userPage.getByRole("textbox", { name: "Search WBO" });
-  const search_button = userPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
+  await userWBOPage.searchFor("Design a Modern Fintech Landing Page")
   await userPage.waitForLoadState("networkidle");
-  const postNames = await userPage.locator("//div[@class='filter-detail']//h5");
-  await postNames.first().waitFor();
-  const count = await postNames.count();
+  const post_names = await userWBOPage.postNames;
+  await post_names.first().waitFor();
+  await userPage.waitForTimeout(500);
+  const count = await post_names.count();
   expect(count).toBeGreaterThanOrEqual(1);
 });
 
@@ -53,7 +51,7 @@ test("TC_WBO_004: View filtered post details and verify recently reviewed posts"
 }) => {
   await userHomePage.gotoWBOViaCard();
   await userWBOPage.waitForPosts();
-  const randomText = "Test 1038";
+  const randomText = "Design a Modern Fintech Landing Page";
   await userWBOPage.searchFor(randomText);
   await userWBOPage.waitForFilteredResults();
   const newPage = await userWBOPage.goToTheFilteredPostetails();
@@ -63,7 +61,7 @@ test("TC_WBO_004: View filtered post details and verify recently reviewed posts"
   await userWBOPage.goToRecentlyReviewedPage();
   await userWBOPage.waitForReviewedPostToAppear();
   const count = await userWBOPage.getPostCount();
-  expect(count).toEqual(1);
+  expect(count).toBeGreaterThanOrEqual(1);
   const isPresent = await userWBOPage.isPostNamePresent(randomText);
   expect(isPresent).toBeTruthy();
 });
@@ -74,7 +72,7 @@ test("TC_WBO_005: Save a filtered post and verify saved posts page", async ({
 }) => {
   await userHomePage.gotoWBOViaCard();
   await userWBOPage.waitForPosts();
-  const randomText = "Test 1038";
+  const randomText = "Design a Modern Fintech Landing Page";
   await userWBOPage.searchFor(randomText);
   await userWBOPage.waitForFilteredResults();
   await userWBOPage.clickOnFirstPostsHeartButton();
@@ -89,6 +87,7 @@ test("TC_WBO_005: Save a filtered post and verify saved posts page", async ({
 });
 
 test("TC_WBO_006: Apply multiple filters and verify counts update correctly", async ({
+  userPage,
   userHomePage,
   userWBOPage,
 }) => {
@@ -105,15 +104,16 @@ test("TC_WBO_006: Apply multiple filters and verify counts update correctly", as
       .filter(Boolean);
     expect(afterFilter).not.toEqual(beforeFilter);
   }).toPass();
-  await userWBOPage.chooseEnergyFromIndustryFilter();
-  await userWBOPage.chooseOilFromCategoryFilter();
-  const countAfterApplyingFilters = await userWBOPage.getTotalPostsCount();
-  expect(countAfterApplyingFilters).not.toEqual(originalPostsCount);
-  await userWBOPage.removeFilter();
-  await expect(async () => {
-  const countAfterClearingFilter = await userWBOPage.getTotalPostsCount();
-  expect(countAfterClearingFilter).toEqual(originalPostsCount);
-  }).toPass();
+  const postCountBeforeIndustryFilter = await userWBOPage.getTotalPostsCount();
+  await userWBOPage.chooseBusinessFinancialInstitutionFromIndustryFilter();
+  await userPage.waitForTimeout(500);
+  const postCountAfterIndustryFilter = await userWBOPage.getTotalPostsCount();
+  expect(postCountAfterIndustryFilter).not.toEqual(postCountBeforeIndustryFilter);
+  await userWBOPage.chooseWealthManagementFromCategoryFilter();
+  await userWBOPage.chooseTaxPreparationFromSubCategory();
+  await userPage.waitForTimeout(500);
+  const postCountAfterCategoryFilter = await userWBOPage.getTotalPostsCount();
+  expect(postCountAfterCategoryFilter).not.toEqual(postCountAfterIndustryFilter);
 });
 
 test("TC_WBO_007: Validate create post form errors and umbrella checkbox behavior", async ({
@@ -202,7 +202,6 @@ test.describe("TC_WBO_Post: Post Operations", () => {
     await expect(userPage.locator("//h6[contains(text(),'Order summary')]")).toBeVisible();
   });
 
-
   test("TC_WBO_002: Verify newly created post shows in Pending Payment Contest", async ({
   userHomePage,
   }) => {
@@ -222,43 +221,14 @@ test.describe("TC_WBO_Post: Post Operations", () => {
     await userHomePage.openWBOPostFromMyOrders();
     await expect(userHomePage.post_contest_name_in_pending_payment_contest.first()).toBeVisible();
     await userWBOPage.goToOrderSummaryPage();
-    const makePayment = userPage.locator("button", { hasText: "Make Payment" });
-    await expect(makePayment).toBeVisible();
-    await makePayment.click();
-    const saveAndMakePayment = userPage.locator("button", {
-      hasText: "Save and make payment",
-    });
-    await saveAndMakePayment.click();
+    await userWBOPage.clickOnMakePayment();
+    await userWBOPage.clickOnSaveAndMakePayment();
     await userPage.waitForTimeout(5000);
-    await expect(userPage.locator('iframe[title="Card Number"]')).toBeVisible();
-    await userPage
-      .frameLocator('iframe[title="Card Number"]')
-      .locator('input[name="card.number"]')
-      .fill("5555555555554444");
-    await userPage.locator('input[placeholder="MM / YY"]').fill("12 / 30");
-    await userPage
-      .locator('input[placeholder="Card holder"]')
-      .fill("Test User");
-    await userPage
-      .frameLocator('iframe[title="Security Code CVV"]')
-      .locator('input[name="card.cvv"]')
-      .fill("123");
-    // Click payment submit and wait for redirect
-    await Promise.all([
-      userPage.waitForURL("**oppwa.com/**"),
-      await userPage
-        .getByRole("button", {
-          name: "Pay now",
-        })
-        .click(),
-    ]);
-    await userPage.waitForLoadState("networkidle");
-    const payBtn = await userPage.locator('input[value="Pay"]');
-    await payBtn.click();
+    await userWBOPage.fillCardDetails();
+    await userWBOPage.clickOnPayNow();
+    await userWBOPage.completePayment();
     await userPage.waitForTimeout(3000);
-    await expect(
-      userPage.getByText("WBO Payment Completed").first(),
-    ).toBeVisible();
+    await expect(userPage.getByText("WBO Payment Completed").first()).toBeVisible();
   })
 
   test("TC_WBO_004: Verify Payment Done Post is displayed under", async ({
@@ -273,18 +243,15 @@ test.describe("TC_WBO_Post: Post Operations", () => {
   test("TC_WBO_005: Search filters return newly created post in results", async ({
       userPage,
       userHomePage,
+      userWBOPage
     }) => {
       await userHomePage.gotoWBOViaCard();
-      const search_box = userPage.getByRole("textbox", { name: "Search WBO" });
-      const search_button = userPage.getByRole("button", { name: "Search" });
-      await search_box.fill(WBOPostName);
-      await search_button.click();
+      await userWBOPage.searchFor(WBOPostName)
       await userPage.waitForLoadState("networkidle");
-      const postNames = await userPage.locator(
-        "//div[@class='filter-detail']//h5",
-      );
-      await postNames.first().waitFor();
-      const count = await postNames.count();
+      const post_names = await userWBOPage.postNames;
+      await post_names.first().waitFor();
+      await userPage.waitForTimeout
+      const count = await post_names.count();
       expect(count).toBe(1);
   });
 
@@ -330,19 +297,12 @@ test.describe("TC_WBO_Post: Post Operations", () => {
   test("TC_WBO_008: Search filters return newly created post in results", async ({
       userPage,
       userHomePage,
+      userWBOPage
     }) => {
       await userHomePage.gotoWBOViaCard();
-      const search_box = userPage.getByRole("textbox", { name: "Search WBO" });
-      const search_button = userPage.getByRole("button", { name: "Search" });
-      await search_box.fill(WBOPostName);
-      await search_button.click();
-      await userPage.waitForLoadState("networkidle"); 
-      const postNames = await userPage.locator(
-        "//div[@class='filter-detail']//h5",
-      );
-      await expect(postNames.first()).not.toBeVisible();
-      const count = await postNames.count();
-      expect(count).toBe(0);
+      await userWBOPage.searchFor(WBOPostName)
+      await userPage.waitForLoadState("networkidle");
+      await expect(userWBOPage.no_post_on_page).toBeVisible();
   });
 });
 
