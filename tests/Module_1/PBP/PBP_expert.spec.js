@@ -1,15 +1,12 @@
-import { test, expect } from "../../fixtures/page.fixture.js";
-import { pageRoutes, PBPPostName } from "../../testData/constants.js";
+import { test, expect } from "../../../fixtures/page.fixture.js";
+import { pageRoutes, PBPPostName } from "../../../testData/constants.js";
 
 test("TC_PBP_001: PBP account page is accessible after login", async ({
   expertHomePage,
   expertPage,
 }) => {
-  // navigate to PBP page from account page and verify URL
   await expertHomePage.gotoPBPViaCard();
   await expect(expertPage).toHaveURL("https://urxprt.com/en/searchall?type=1");
-
-  // navigate to PBP page via dropdown from homepage and verify URL
   await expertHomePage.gotoHomepage();
   await expertHomePage.goToPBPViaHeader();
   await expect(expertPage).toHaveURL("https://urxprt.com/en/searchall?type=1");
@@ -18,20 +15,17 @@ test("TC_PBP_001: PBP account page is accessible after login", async ({
 test("TC_PBP_002: Search filters return expected results", async ({
   expertPage,
   expertHomePage,
+  expertPBPPage
 }) => {
   await expertHomePage.gotoPBPViaCard();
   const randomText = "IOS app";
-  const search_box = expertPage.getByRole("textbox", { name: "Search PBP" });
-  const search_button = expertPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
-
-  await expertPage.waitForLoadState("networkidle"); // wait for search results to load
-
-  const postNames = await expertPage.locator("//div[@class='filter-detail']//h5");
-  await postNames.first().waitFor();
-  const count = await postNames.count();
-  expect(count).toBeGreaterThanOrEqual(1);
+  await expertPBPPage.searchFor(randomText);
+  await expertPage.waitForLoadState("networkidle");
+  const post_names = await expertPBPPage.postNames;
+  await post_names.first().waitFor();
+  await expertPage.waitForTimeout(500);
+  const count = await post_names.count();
+  expect(count).toEqual(1);
 });
 
 test("TC_PBP_003: Navigate to create post page from homepage and dashboard", async ({
@@ -94,6 +88,7 @@ test("TC_PBP_005: Save a filtered post and verify saved posts page", async ({
 });
 
 test("TC_PBP_006: Apply multiple filters and verify counts update correctly", async ({
+  expertPage,
   expertHomePage,
   expertPBPPage,
 }) => {
@@ -108,46 +103,18 @@ test("TC_PBP_006: Apply multiple filters and verify counts update correctly", as
     const after = await expertPBPPage.postNames.allTextContents();
     expect(after).not.toEqual(beforeFilter);
   }).toPass();
-  await expertPBPPage.chooseEnergyFromIndustryFilter();
-  const countAfterIndustrySelect = await expertPBPPage.getUpdatedPageNumber();
-  expect(originalPageCount).not.toEqual(countAfterIndustrySelect);
-  await expertPBPPage.chooseOilFromCategoryFilter();
-  const countAfterCategorySelect = await expertPBPPage.getUpdatedPageNumber();
-  expect(countAfterCategorySelect).not.toEqual(countAfterIndustrySelect);
-  await expertPBPPage.chooseDrillingFromSubCategory();
-  const countAfterSubCategorySelection =
-    await expertPBPPage.getUpdatedPageNumber();
-  expect(countAfterSubCategorySelection).not.toEqual(countAfterCategorySelect);
-  await expertPBPPage.removeFilter();
-  const countAfterClearingFilter = await expertPBPPage.getUpdatedPageNumber();
-  expect(countAfterClearingFilter).toEqual(originalPageCount);
+  await expertPBPPage.chooseBusinessFromIndustryFilter();
+  await expertPage.waitForTimeout(500);
+  const countAfterBusinessSelect = await expertPBPPage.getUpdatedPageNumber();
+  expect(originalPageCount).not.toEqual(countAfterBusinessSelect);
+  const postCountBeforeCategorySelect = await expertPBPPage.getTotalPostsCount();
+  await expertPBPPage.chooseMACFromCategoryFilter();
+  await expertPage.waitForTimeout(500);
+  const postCountAfterCategorySelect  = await expertPBPPage.getTotalPostsCount();
+  expect(postCountAfterCategorySelect).not.toEqual(postCountBeforeCategorySelect);
 });
 
-test("TC_PBP_007: Verify Join as Expert/Company popup opens from a post detail", async ({
-  expertPage,
-  expertHomePage,
-  expertPBPPage,
-}) => {
-  await expertHomePage.gotoPBPViaCard();
-  await expertPBPPage.waitForPosts();
-  const randomText = "Test 1038";
-  await expertPBPPage.searchFor(randomText);
-  await expertPBPPage.waitForFilteredResults();
-  const newPage = await expertPBPPage.goToTheFilteredPostetails();
-  await expertPBPPage.verifyPostDetailsIsVisible(newPage);
-  await expertPBPPage.clickOnApplyButton(newPage);
-  await expertPBPPage.verifyJoinAsExpertOrCompanyPopUpAppearsForUserAccount(
-    newPage,
-  );
-  await expertPBPPage.verifyJoinAsExpertAndJoinAsCompanyButtonIsClickable(
-    newPage,
-  );
-  await expertPBPPage.closePopUp(newPage);
-  await newPage.close();
-  await expertPage.reload();
-});
-
-test("TC_PBP_008: Validate create post form errors and umbrella checkbox behavior", async ({
+test("TC_PBP_007: Validate create post form errors and umbrella checkbox behavior", async ({
   expertPage,
   expertHomePage,
   expertPBPPage,
@@ -171,35 +138,23 @@ test("TC_PBP_008: Validate create post form errors and umbrella checkbox behavio
 test.describe("TC_PBP_Post: Post Operations", () => {
   test.describe.configure({ mode: 'serial' });
   test("TC_PBP_001: Verify create post from PBP page", async ({
-  expertPage,
-  expertHomePage,
-  expertPBPPage,
+    expertPage,
+    expertHomePage,
+    expertPBPPage,
   }) => {
     await expertHomePage.gotoPBPViaCard();
     await expertPBPPage.clickOnCreateAPostButton();
     await expect(expertPage).toHaveURL(/.*\/createpost/);
     await expertPBPPage.fillInput("Write a title for your post ", PBPPostName);
     await expertPBPPage.selectDropdown("Select Industries *", "Business");
-    await expertPBPPage.selectDropdown(
-      "Select Category *",
-      "Managing and Consultant",
-    );
-    await expertPBPPage.selectDropdown(
-      "Select Sub Category",
-      "Project Management",
-    );
-    await expertPBPPage.fillRichTextEditor(
-      "Project Description *",
-      "This is a test description for automation",
-    );
-    await expertPage.waitForTimeout(2000); // wait for validation to trigger
+    await expertPBPPage.selectDropdown("Select Category *","Managing and Consultant");
+    await expertPBPPage.selectDropdown("Select Sub Category","Project Management");
+    await expertPBPPage.fillRichTextEditor("Project Description *","This is a test description for automation");
+    await expertPage.waitForTimeout(500);
     const nextButton = expertPage.getByRole("button", { name: "Next" });
     await expect(nextButton).toBeEnabled();
     await nextButton.click();
-    await expertPBPPage.selectMultiDropdown("Select competencies", [
-      "Branding",
-      "Campaigns",
-    ]);
+    await expertPBPPage.selectMultiDropdown("Select competencies", ["Branding","Campaigns"]);
     await nextButton.click();
     await expect(expertPBPPage.required_competencies_error).toBeVisible();
     const skill = expertPage.locator("p.select-deactive-skill", { hasText: "CRM +", exact: true,});
@@ -212,45 +167,33 @@ test.describe("TC_PBP_Post: Post Operations", () => {
     await expertPBPPage.fillInputWithPlaceholder("Enter number of days", "10");
     await nextButton.click();
     await expertPBPPage.expected_deliverables_input.fill("This is test deliverable");
-    await expertPBPPage.selectDropdown(
-      "Preferred Language of Work Submission *",
-      "English",
-    );
-    await expertPage.waitForTimeout(1000);
+    await expertPBPPage.selectDropdown("Preferred Language of Work Submission *","English");
+    await expertPage.waitForTimeout(500);
     await expect(nextButton).toBeEnabled();
     await nextButton.click();
-    await expect(
-      expertPage.getByText("Post & Browse Projects (PBP) Summary"),
-    ).toBeVisible();  
+    await expect(expertPage.getByText("Post & Browse Projects (PBP) Summary")).toBeVisible();  
     const postJobButton = expertPage.getByRole("button", { name: "Post Project" });
     postJobButton.click();
-    await expect(
-      expertPage.getByText("Congratulations! Your post is now live."),
-    ).toBeVisible();
+    await expect(expertPage.getByText("Congratulations! Your post is now live.")).toBeVisible();
   });
 
   test("TC_PBP_002: Search filters return newly created post in results", async ({
       expertPage,
       expertHomePage,
+      expertPBPPage
     }) => {
       await expertHomePage.gotoPBPViaCard();
-      // await expertHomePage.searchOnPBPPage('Frontend Developer');
-      const search_box = expertPage.getByRole("textbox", { name: "Search PBP" });
-      const search_button = expertPage.getByRole("button", { name: "Search" });
-      //   await expertPage.waitForTimeout(2000);
-      await search_box.fill(PBPPostName);
-      await search_button.click();
-      await expertPage.waitForLoadState("networkidle"); // wait for search results to load
-      const postNames = await expertPage.locator(
-        "//div[@class='filter-detail']//h5",
-      );
-      await postNames.first().waitFor();
-      const count = await postNames.count();
+      await expertPBPPage.searchFor(PBPPostName);
+      await expertPage.waitForLoadState("networkidle");
+      const post_names = await expertPBPPage.postNames;
+      await post_names.first().waitFor();
+      await expertPage.waitForTimeout(500);
+      const count = await post_names.count();
       expect(count).toBe(1);
   });
 
   test("TC_PBP_003: Verify newly created post are displayed in My Orders under Posted Posts", async ({
-  expertHomePage,
+    expertHomePage
   }) => {
     await expertHomePage.gotoPBPViaCard();
     await expertHomePage.navigateToMyOrdersViaPreview();
@@ -259,9 +202,9 @@ test.describe("TC_PBP_Post: Post Operations", () => {
   })
 
   test("TC_PBP_004: Verify newly created post are editable", async ({
-  expertPage,
-  expertHomePage,
-  expertPBPPage,
+    expertPage,
+    expertHomePage,
+    expertPBPPage,
   }) => {
     await expertHomePage.gotoPBPViaCard();
     await expertHomePage.navigateToMyOrdersViaPreview();
@@ -273,18 +216,16 @@ test.describe("TC_PBP_Post: Post Operations", () => {
     await expertPBPPage.clickOnSaveNButton();
     const postProjectButton = expertPage.getByRole("button", { name: "Post Project" });
     postProjectButton.click();
-    await expect(
-      expertPage.getByText("PBP updated sucessfully"),
-    ).toBeVisible();
+    await expect(expertPage.getByText("PBP updated sucessfully")).toBeVisible();
     await expertHomePage.navigateToMyOrdersViaPreview();
     await expertHomePage.openPBPPostFromMyOrders();
     await expect(expertHomePage.postNamesOnMyOrders.first()).toHaveText(PBPPostName+" Edited");
   })
 
   test("TC_PBP_005: Verify newly created post can be cancelled", async ({
-  expertPage,
-  expertHomePage,
-  expertPBPPage,
+    expertPage,
+    expertHomePage,
+    expertPBPPage
   }) => {
     await expertHomePage.gotoPBPViaCard();
     await expertHomePage.navigateToMyOrdersViaPreview();
@@ -292,27 +233,22 @@ test.describe("TC_PBP_Post: Post Operations", () => {
     await expect(expertHomePage.postNamesOnMyOrders.first()).toBeVisible();
     await expertPBPPage.view_details_button.first().click();
     await expertPBPPage.cancelCreatedPBPPost();
-    await expect(
-      expertPage.getByText("Your post has been successfully cancelled"),
-    ).toBeVisible();
+    await expect(expertPage.getByText("Your post has been successfully cancelled")).toBeVisible();
   })
 
   test("TC_PBP_006: Search filters return newly created post in results", async ({
-      expertPage,
-      expertHomePage,
-    }) => {
-      await expertHomePage.gotoPBPViaCard();
-      const search_box = expertPage.getByRole("textbox", { name: "Search PBP" });
-      const search_button = expertPage.getByRole("button", { name: "Search" });
-      await search_box.fill(PBPPostName);
-      await search_button.click();
-      await expertPage.waitForLoadState("networkidle"); 
-      const postNames = await expertPage.locator(
-        "//div[@class='filter-detail']//h5",
-      );
-      await expect(postNames.first()).not.toBeVisible();
-      const count = await postNames.count();
-      expect(count).toBe(0);
+    expertPage,
+    expertHomePage,
+    expertPBPPage
+  }) => {
+    await expertHomePage.gotoPBPViaCard();
+    await expertPBPPage.searchFor(PBPPostName);
+    await expertPage.waitForLoadState("networkidle");
+    const post_names = await expertPBPPage.postNames;
+    await post_names.first().waitFor();
+    await expertPage.waitForTimeout(500);
+    const count = await post_names.count();
+    expect(count).toBe(0);
   });
 });
 

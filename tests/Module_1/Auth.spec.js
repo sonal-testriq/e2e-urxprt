@@ -3,8 +3,6 @@ import LoginPage from "../../pages/LoginPage.js";
 import credentials from "../../testData/credentials.json";
 import { authData } from "../../testData/constants.js";
 
-//npx playwright test AUTH.spec.js --config=playwright.no-setup.config.js
-
 test("TC_AUTH_001: Ensure validation prevents submitting blank credentials.", async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.openLoginPage();
@@ -51,42 +49,53 @@ test("TC_AUTH_005: Verify that the user can login with valid email and password.
   await loginPage.expectToBeRedirectedToAccount();
 });
 
-test("TC_AUTH_006: Verify that the user can login with valid Mobile number.", async ({ page }) => {
+test("TC_AUTH_006: Verify that the user can login with valid Mobile number via SMS.", async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.openLoginPage();
   await loginPage.openMobileLogin();
-  await loginPage.submitMobileNumber(authData.validMobileNumber);
+  await loginPage.submitViaMobileSMS(authData.validMobileNumber);
   const otpSentMessage = await loginPage.getSuccessPopupText();
   expect(otpSentMessage).toContain(authData.errorMessages.otpSentSuccess);
   await loginPage.verifyOtp(authData.otpSuccess);
   await loginPage.expectToBeRedirectedToAccount();
 });
 
-test("TC_AUTH_007: Verify that login fails with invalid/unregistered Mobile number.", async ({ page }) => {
+test("TC_AUTH_007: Verify that the user can login with valid Mobile number via WhatsApp.", async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.openLoginPage();
   await loginPage.openMobileLogin();
-  await loginPage.submitMobileNumber(authData.invalidMobileNumber);
+  await loginPage.submitViaMobileWhatsApp(authData.validMobileNumber);
+  const otpSentMessage = await loginPage.getSuccessPopupText();
+  expect(otpSentMessage).toContain(authData.errorMessages.otpSentSuccess);
+  await loginPage.verifyOtp(authData.otpSuccess);
+  await loginPage.expectToBeRedirectedToAccount();
+});
+
+test("TC_AUTH_008: Verify that login fails with invalid/unregistered Mobile number.", async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.openLoginPage();
+  await loginPage.openMobileLogin();
+  await loginPage.submitViaMobileSMS(authData.invalidMobileNumber);
   const errorPopup = await loginPage.getPopupText();
   expect(errorPopup).toContain(authData.errorMessages.unregisteredMobile);
 });
 
-test("TC_AUTH_008: Verify that login fails with empty/invalid Mobile number.", async ({ page }) => {
+test("TC_AUTH_009: Verify that login fails with empty/invalid Mobile number.", async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.openLoginPage();
   await loginPage.openMobileLogin();
-  await loginPage.submitMobileNumber(authData.shortMobileNumber);
+  await loginPage.submitViaMobileSMS(authData.shortMobileNumber);
   await loginPage.expectErrorMessageVisible(authData.errorMessages.exactly10Digits);
   await loginPage.mobileNumberField.clear();
   await loginPage.clickCreateAccount();
   await loginPage.expectErrorMessageVisible(authData.errorMessages.requiredField);
 });
 
-test("TC_AUTH_009: Verify that user can not login with incorrect/invalid OTP", async ({ page }) => {
+test("TC_AUTH_010: Verify that user can not login with incorrect/invalid OTP", async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.openLoginPage();
   await loginPage.openMobileLogin();
-  await loginPage.submitMobileNumber(authData.validMobileNumber);
+  await loginPage.submitViaMobileSMS(authData.validMobileNumber);
   const otpSentMessage = await loginPage.getSuccessPopupText();
   expect(otpSentMessage).toContain(authData.errorMessages.otpSentSuccess);
   await loginPage.verifyOtp(authData.otpInvalid);
@@ -94,7 +103,7 @@ test("TC_AUTH_009: Verify that user can not login with incorrect/invalid OTP", a
   expect(errorPopup).toContain("Invalid OTP");
 });
 
-test("TC_AUTH_010: Verify that all compulsory fields must be filled and accepted before submitting the registration form", async ({ page }) => {
+test("TC_AUTH_011: Verify that all compulsory fields must be filled and accepted before submitting the registration form", async ({ page }) => {
   const loginPage = new LoginPage(page);
   const user = credentials.find((u) => u.name === "user");
   await loginPage.openSignupPage();
@@ -154,14 +163,14 @@ test("TC_AUTH_010: Verify that all compulsory fields must be filled and accepted
   }
 });
 
-test("TC_AUTH_011: Ensure that users who are not logged in (guests) are redirected to the login page when attempting to access restricted content", async ({ page }) => {
+test("TC_AUTH_012: Ensure that users who are not logged in (guests) are redirected to the login page when attempting to access restricted content", async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.gotoHomepage();
   await loginPage.clickCreatePostButton();
   await loginPage.expectToBeRedirectedToLoginWithEmailPage();
 });
 
-test("TC_AUTH_012: Ensure that users who are not logged in (guests) can only access public pages", async ({ page }) => {
+test("TC_AUTH_013: Ensure that users who are not logged in (guests) can only access public pages", async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.gotoHomepage();
   await loginPage.clickFindWorkButton();

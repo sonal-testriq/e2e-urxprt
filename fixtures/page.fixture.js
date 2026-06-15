@@ -1,12 +1,15 @@
 // fixtures/pages.fixture.js
 import { test as authTest } from "./auth.fixture.js";
-import PTJPage from "../pages/part-time-job.page.js";
+import PTJPage from "../pages/PTJPage.js";
 import PBPPage from "../pages/PBPPage.js";
 import WBOPage from "../pages/WBOPage.js";
 import BSMPage from "../pages/BSMPage.js";
 import FTJPage from "../pages/FTJPage.js";
 import HomePage from "../pages/home_page.js";
 import TAIPage from "../pages/TAIPage.js";
+import OTSPage from "../pages/OTSPage.js";
+import BSAPage from "../pages/BSAPage.js";
+import MASPage from "../pages/MASPage.js";
 import hireCompanyAndExpertPage from "../pages/hireCompanyAndExpertPage.js";
 
 import { BasePage } from "../pages/base_page.js";
@@ -20,10 +23,6 @@ export const test = authTest.extend({
   // Company's Job Post page (company posts jobs differently)
   expertHomePage: async ({ expertPage }, use) => {
     await use(new HomePage(expertPage));
-  },
-
-  companyHomePage: async ({ companyPage }, use) => {
-    await use(new HomePage(companyPage));
   },
 
   // Expert's Job Post page object — authenticated + page object in one
@@ -102,6 +101,16 @@ export const test = authTest.extend({
     await use(new WBOPage(userPage));
   },
 
+  // User's WBO page object
+  expertWBOPage: async ({ expertPage }, use) => {
+    await use(new WBOPage(expertPage));
+  },
+
+  // User's WBO page object
+  companyWBOPage: async ({ companyPage }, use) => {
+    await use(new WBOPage(companyPage));
+  },
+
   // Expert's PBP page object
   expertPBPPage: async ({ expertPage }, use) => {
     await use(new PBPPage(expertPage));
@@ -110,6 +119,51 @@ export const test = authTest.extend({
   // Company's PBP page object
   companyPBPPage: async ({ companyPage }, use) => {
     await use(new PBPPage(companyPage));
+  },
+
+  // User's OTS page object
+  userOTSPage: async ({ userPage }, use) => {
+    await use(new OTSPage(userPage));
+  },
+
+  // User's BSA page object
+  userBSAPage: async ({ userPage }, use) => {
+    await use(new BSAPage(userPage));
+  },
+
+  // User's MAS page object
+  userMASPage: async ({ userPage }, use) => {
+    await use(new MASPage(userPage));
+  },
+
+  // Expert's OTS page object
+  expertOTSPage: async ({ expertPage }, use) => {
+    await use(new OTSPage(expertPage));
+  },
+
+  // Expert's BSA page object
+  expertBSAPage: async ({ expertPage }, use) => {
+    await use(new BSAPage(expertPage));
+  },
+
+  // Expert's MAS page object
+  expertMASPage: async ({ expertPage }, use) => {
+    await use(new MASPage(expertPage));
+  },
+
+  // Company's OTS page object
+  companyOTSPage: async ({ companyPage }, use) => {
+    await use(new OTSPage(companyPage));
+  },
+
+  // Company's BSA page object
+  companyBSAPage: async ({ companyPage }, use) => {
+    await use(new BSAPage(companyPage));
+  },
+
+  // Company's MAS page object
+  companyMASPage: async ({ companyPage }, use) => {
+    await use(new MASPage(companyPage));
   },
 });
 

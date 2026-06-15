@@ -25,10 +25,13 @@ export default class WBOPage extends BasePage {
       "//div[contains(text(),'Select Industry')]/parent::div/parent::div",
     );
     this.energy_option = page.getByRole("option", { name: "Energy" });
+    this.bfi_option = page.getByRole("option", { name: "Banking Financial Institutions" });
     this.select_category_filter = page.locator(
       "//div[contains(text(),'Select Category')]/parent::div/parent::div",
     );
     this.oil_category = page.getByRole("option", { name: "Oil" });
+    this.wm_category = page.getByRole("option", { name: "Wealth Management" });
+    this.tp_sub_category = page.getByRole("option", { name: "Tax Preparation" });
     this.select_sub_category_filter = page.locator(
       "//div[contains(text(),'Select Sub Category')]/parent::div/parent::div",
     );
@@ -60,6 +63,25 @@ export default class WBOPage extends BasePage {
     this.confirm_cancellation_popup = page.locator("//h4[contains(text(),'Confirm Cancellation')]");
     this.confirm_cancellation_button = page.locator("//button[contains(text(),'Confirm')]");
     this.its_cancelled_button = page.locator("//button[contains(text(),'It’s cancelled')]");
+    this.cards = page.locator("//div[@class='post-back']");
+    this.make_payment_button = page.locator("button", { hasText: "Make Payment" });
+    this.save_and_make_payment_button = page.locator("button", { hasText: "Save and make payment" });
+    this.card_number_iframe = page.locator('iframe[title="Card Number"]');
+    this.card_number = page.frameLocator('iframe[title="Card Number"]').locator('input[name="card.number"]');
+    this.expiry_date = page.locator('input[placeholder="MM / YY"]');
+    this.card_holder = page.locator('input[placeholder="Card holder"]');
+    this.cvv = page.frameLocator('iframe[title="Security Code CVV"]').locator('input[name="card.cvv"]');
+    this.pay_now_button = page.getByRole("button", { name: "Pay now" });
+    this.pay_button = page.locator('input[value="Pay"]');
+    this.payment_success_message = page.getByText("WBO Payment Completed").first();
+    this.no_post_on_page = page.locator(".content-loader");
+    this.next_button = page.getByRole("button", { name: "Next" });
+    this.post_contest_button = page.getByRole("button", { name: "Post Contest" });
+    this.order_summary_heading = page.locator("//h6[contains(text(),'Order summary')]");
+    this.make_payment_button = page.locator("button", { hasText: "Make Payment", });
+    this.save_and_make_payment_button = page.locator("button", { hasText: "Save and make payment" });
+    this.submit_entry_button = page.getByRole("button", { name: "Submit entry", exact: true });
+    this.error_messages = page.locator(".error");
   }
 
   async verifyWBOPage() {
@@ -116,6 +138,11 @@ export default class WBOPage extends BasePage {
     await this.search_button.click();
   }
 
+  async searchForAndWait(text) {
+    await this.searchFor(text);
+    await this.waitForPosts();
+  }
+
   async waitForFilteredResults() {
     await expect
       .poll(async () => await this.postNames.count())
@@ -167,16 +194,34 @@ export default class WBOPage extends BasePage {
     await this.energy_option.click();
   }
 
+  async chooseBusinessFinancialInstitutionFromIndustryFilter() {
+    await this.select_industry_filter.click();
+    await expect(this.bfi_option).toBeVisible();
+    await this.bfi_option.click();
+  }
+
   async chooseOilFromCategoryFilter() {
     await this.select_category_filter.click();
     await expect(this.oil_category).toBeVisible();
     await this.oil_category.click();
   }
 
+  async chooseWealthManagementFromCategoryFilter() {
+    await this.select_category_filter.click();
+    await expect(this.wm_category).toBeVisible();
+    await this.wm_category.click();
+  }
+
   async chooseDrillingFromSubCategory() {
     await this.select_sub_category_filter.click();
     await expect(this.drilling_sub_category).toBeVisible();
     await this.drilling_sub_category.click();
+  }
+
+  async chooseTaxPreparationFromSubCategory() {
+    await this.select_sub_category_filter.click();
+    await expect(this.tp_sub_category).toBeVisible();
+    await this.tp_sub_category.click();
   }
 
   async getTheTotalPageNumber() {
@@ -296,6 +341,309 @@ export default class WBOPage extends BasePage {
     const commentBox = await this.page.locator(".rent-product #comment");
     await commentBox.click();
     await commentBox.fill(comment);
+    await this.page.waitForTimeout(500);
+  }
+
+  async getDelayedPostName(entryCount) {
+        await this.cards.first().waitFor();
+        const cardCount = await this.cards.count();
+        for (let i = 0; i < cardCount; i++) {
+            const card = this.cards.nth(i);
+            const delay = (await card.locator("//i/parent::p").textContent())?.trim();
+            const entries = (await card.locator("//div[contains(@class,'activity')]//p").textContent())?.trim();
+            if (
+                delay?.includes('day delay') &&
+                entries === `Entries: ${entryCount}`
+            ) {
+                return (await card.locator("//h3").textContent())?.trim();
+            }
+        }
+        return null; // No matching post found
+    }
+
+    async clickOnMakePayment() {
+      await expect(this.make_payment_button).toBeVisible();
+      await this.make_payment_button.click();
+    }
+
+    async clickOnSaveAndMakePayment() {
+      await this.save_and_make_payment_button.click();
+    }
+
+    async fillCardDetails() {
+      await expect(this.card_number_iframe).toBeVisible();
+      await this.card_number.fill("5555555555554444");
+      await this.expiry_date.fill("12 / 30");
+      await this.card_holder.fill("Test User");
+      await this.cvv.fill("123");
+    }
+
+    async clickOnPayNow() {
+      await Promise.all([
+        this.page.waitForURL("**oppwa.com/**"),
+        this.pay_now_button.click(),
+      ]);
+    }
+
+    async completePayment() {
+      await this.page.waitForLoadState("networkidle");
+      await this.pay_button.click();
+    }
+
+    async verifyPaymentSuccess() {
+      await expect(this.payment_success_message).toBeVisible();
+    }
+
+    async acceptContract_expert(newpage) {
+      await newpage.locator("#first_name").fill("Shivakumar");
+      await newpage.locator("#last_name").fill("GP");
+      await newpage.locator("label[for='agree']").click();
+      await newpage.waitForTimeout(1000);
+      await newpage.locator(".popup-contract-container").locator("button", { name: "Scroll to Bottom", exact: true }).click();
+      await newpage.locator(".popup-contract-container").locator("input[id='agree']").click();
+      await newpage.waitForLoadState("networkidle");
+      await newpage.locator("button", { hasText: "Accept & Publish" }).click();
+    }
+
+    async acceptContract_company(newpage) {
+      await newpage.locator("#first_name").fill("Shivakumar");
+      await newpage.locator("#last_name").fill("Padaiyachi");
+      await newpage.locator("label[for='agree']").click();
+      await newpage.waitForTimeout(1000);
+      await newpage.locator(".popup-contract-container").locator("button", { name: "Scroll to Bottom", exact: true }).click();
+      await newpage.locator(".popup-contract-container").locator("input[id='agree']").click();
+      await newpage.waitForLoadState("networkidle");
+      await newpage.locator("button", { hasText: "Accept & Publish" }).click();
+    }
+
+    async clickNext() {
+      await this.next_button.click();
+    }
+
+    async clickPostContest() {
+      await this.post_contest_button.click();
+    }
+
+    async selectCRMSkill() {
+      await this.page
+        .locator("p.select-deactive-skill", {
+          hasText: "CRM +",
+          exact: true,
+        })
+        .click();
+    }
+
+    async openPost(postName) {
+      const postCard = this.page.locator(".filter-detail", { hasText: postName });
+      await expect(postCard).toBeVisible();
+      const [newPage] = await Promise.all([
+        this.page.context().waitForEvent("page"),
+        postCard.click(),
+      ]);
+      await newPage.waitForLoadState();
+      return newPage; 
+    }
+
+    async clickSubmitEntry(newPage) {
+      await newPage.getByRole("button", {
+        name: "Submit entry",
+        exact: true,
+      }).click();
+    }
+
+    async verifyEntryValidationErrors(newPage) {
+      const expectedErrors = [
+        "At least one file is required",
+        "This is required",
+        "This is required",
+        "Licensed content is required",
+      ];
+      const errors = newPage.locator(".error");
+      const count = await errors.count();
+
+      for (let i = 0; i < count; i++) {
+        const text = (await errors.nth(i).textContent()).trim();
+        expect(expectedErrors).toContain(text);
+      }
+    }
+
+    async uploadEntryFile(newPage, filePath) {
+      await newPage.locator('input[type="file"]').setInputFiles(filePath);
+    }
+
+    async verifyUploadedFile(newPage) {
+      await expect(newPage.locator("//img[@alt='Delete']")).toBeVisible();
+    }
+
+    async fillEntryDetails(newPage, title, description) {
+      const pageObj = new BasePage(newPage);
+      await pageObj.fillInputWithPlaceholder("Enter entry title", title);
+      await pageObj.fillInputWithPlaceholder("Enter description here", description);
+    }
+
+    async acceptEntryDeclaration(newPage) {
+      const pageObj = new BasePage(newPage);
+      await pageObj.clickOnCheckbox("This entry is entirely my own.");
+    }
+
+    async openWBOOrder(postName) {
+      await this.page
+        .locator(`//h3[contains(text(),'${postName}')]/parent::div/following-sibling::button`)
+        .click();
+    }
+
+    async openEntriesTab() {
+      await this.page.locator(".nav-tabs").locator("a", {
+        hasText: "Entries",
+        exact: false,
+      }).click();
+    }
+
+    async verifyExpertEntry(userName) {
+      const entryCard = this.page.locator(".entries", {
+        has: this.page.locator("span", { hasText: userName }),
+      });
+
+      await expect(entryCard).toBeVisible();
+    }
+
+    async verifyCommentPopup() {
+      await expect(this.page.locator(".rent-product")).toBeVisible();
+    }
+
+    async submitComment(comment) {
+      await this.writeComment(comment);
+      await this.page.locator(".last-popupsec .btn").click();
+      await this.page.waitForTimeout(500);
+    }
+
+    async verifyComment(comment) {
+      await expect(
+        this.page.locator(".modal-comment .comment-sec", {
+          hasText: comment,
+        })
+      ).toBeVisible();
+    }
+
+    async closeCommentPopup() {
+      await this.page.locator(".rent-product .btn img").click();
+    }
+
+    async verifyCommentPopupClosed() {
+      await expect(this.page.locator(".rent-product")).not.toBeVisible();
+    }
+
+    async verifyCompanyEntry(userName) {
+    const entryCard = this.page.locator(".entries", {
+      has: this.page.locator("span", { hasText: userName }),
+    });
+
+    await expect(entryCard).toBeVisible();
+  }
+
+  async verifyAwardContestButton() {
+    const awardContestBtn = this.page.locator("//button[contains(.,'Award Contest')]");
+    await expect(awardContestBtn).toBeVisible();
+    await expect(awardContestBtn).toBeEnabled();
+  }
+
+  async clickAwardContest() {
+    await this.page.waitForTimeout(1200);
+    await this.page.locator("//button[contains(.,'Award Contest')]").click();
+  }
+
+  async acceptAwardContract() {
+    await this.page.waitForTimeout(500);
+    await this.page.locator("label[for='agree']").click();
+    await this.page.waitForTimeout(500);
+    await this.page.locator(".popup-contract-container").locator("button", {
+        name: "Scroll to Bottom",
+        exact: true,
+      }).click();
+    await this.page.waitForTimeout(500);
+    await this.page.locator(".popup-contract-container").locator("input[id='agree']")
+      .click();
+    await this.page.waitForTimeout(500);
+    await this.page.waitForLoadState("networkidle");
+    await this.page.waitForTimeout(500);
+    await this.page.locator("button", {
+        hasText: "Accept and Award Winner",
+      }).click();
+  }
+
+  async verifyWinnerSelected() {
+    await expect(
+      this.page.locator(
+        "//h6[contains(text(),'Winner has been chosen. Waiting for Submission')]"
+      )
+    ).toBeVisible();
+  }
+
+  async openManageWorkPost(postName) {
+    await this.page
+      .locator(`//h3[text()='${postName}']/parent::div/following-sibling::button`)
+      .click();
+  }
+
+  async openHandoverTab() {
+    await this.page.locator(".nav-tabs")
+      .locator("a", {
+        hasText: "Handover",
+        exact: true,
+      })
+      .click();
+  }
+
+  async uploadHandoverFile(filePath) {
+    await this.page
+      .locator('input[type="file"]')
+      .setInputFiles(filePath);
+  }
+
+  async clickSubmitFiles() {
+    await this.page.getByRole("button", {
+      name: "Submit files",
+      exact: true,
+    }).click();
+  }
+
+  async verifyAwaitingReviewMessage() {
+    await expect(
+      this.page.locator(
+        "//h6[contains(text(),'Awaiting Review of Submitted Documents')]"
+      )
+    ).toBeVisible();
+  }
+
+  async clickApproveSubmission() {
+    const approveButton = this.page.locator(
+      "//button[contains(text(),'Approve Submission')]"
+    );
+
+    await expect(approveButton).toBeVisible();
+    await approveButton.click();
+  }
+
+  async verifyAcceptDocumentsPopup() {
+    await expect(
+      this.page.locator(
+        "//h6[contains(text(),'Accept Documents and Files')]"
+      )
+    ).toBeVisible();
+  }
+
+  async confirmSubmissionApproval() {
+    await this.page
+      .locator("//button[contains(text(),'YES')]")
+      .click();
+  }
+
+  async verifySubmissionAccepted() {
+    await expect(
+      this.page.locator(
+        "//h6[contains(text(),'Submission Accepted - Congratulations')]"
+      )
+    ).toBeVisible();
   }
 
 }

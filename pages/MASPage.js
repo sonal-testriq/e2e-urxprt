@@ -1,42 +1,36 @@
 import { expect } from "@playwright/test";
 import { BasePage } from "./base_page";
 
-export default class TAIPage extends BasePage {
+export default class MASPage extends BasePage {
   constructor(page) {
     super(page);
-    this.postNames = page.locator("//div[@class='packaged-img']//h6");
-    this.search_box = page.getByRole("textbox", { name: "Search TAI" });
+    this.postNames = page.locator("//div[@class='packaged-img']//h3");
+    this.search_box = page.getByRole("textbox", { name: "Search MAS" });
     this.search_button = page.getByRole("button", { name: "Search" });
-    this.addAProduct_button = page.locator(
-      "//button[contains(text(),'Add a Product')]",
+    this.addACompany_button = page.locator(
+      "//button[contains(text(),'Add Company')]",
     );
     this.allServicesBtn = page.locator("//a[text()='All Services']");
+    this.viewMore_button = page.locator("//button[text()='View more']");
+    this.informationTab = page.locator(".add-education-modal");
     this.recently_viewed_tab = page.locator(
       "//a[contains(text(),'Recently viewed')]",
     );
-    this.saved_posts_tab = page.locator("//a[contains(text(),'Saved Products')]");
+    this.saved_posts_tab = page.locator("//a[contains(text(),'Saved Companies')]");
     this.post_not_found = page.locator("//div[@class='content-loader']");
     this.pagination = page.locator("//ul[@class='pagination']/li/a");
-    this.select_option = page.locator(
-      "//div[contains(text(),'Select option')]/parent::div/parent::div",
+    this.country_filter = page.locator(
+      "//div[contains(text(),'Search Country')]/parent::div/parent::div",
     );
-    this.rentalOnly_option = page.getByRole("option", { name: "Rental Only" , exact: true });
+    this.india_option = page.getByRole("option", { name: "India" , exact: true });
+    this.city_input = page.locator("//input[@placeholder='Search here']");
     this.industry_filter = page.locator(
       "//div[contains(text(),'Search Here')]/parent::div/parent::div",
     );
     this.bussiness_option = page.getByRole("option", { name: "Business" });
-    this.category_filter = page.locator(
-      "//div[contains(text(),'Select Category')]/parent::div/parent::div",
-    );
-    this.mc_option = page.getByRole("option", { name: "Managing and Consultant" });
-    this.subcategory_filter = page.locator(
-      "//div[contains(text(),'Search subcategories')]/parent::div/parent::div",
-    );
-    this.sc_option = page.getByRole("option", { name: "Strategy Consulting" });
-    this.success_message = page.locator(".custom-popup.alert.alert-success");
   }
-  async addAProduct() {
-    await this.addAProduct_button.click();
+  async addACompany() {
+    await this.addACompany_button.click();
   }
 
   async goToAllServicesTab() {
@@ -58,21 +52,24 @@ export default class TAIPage extends BasePage {
       .toBeLessThanOrEqual(1);
   }
 
-  async goToTheFilteredPostetails() {
-    const [newPage] = await Promise.all([
-      this.page.context().waitForEvent("page"),
-      this.postNames.click(),
-    ]);
-    await newPage.waitForLoadState("networkidle");
-    return newPage;
+  async clickOnViewMoreButton() {
+    await this.viewMore_button.click();
+    await expect(this.informationTab).toBeVisible();
   }
 
-  async verifyPostDetailsIsVisible(newPage) {
-    const postDetails = newPage.locator(
-      "//div[contains(@class,'package-right')]",
+  async verifyPostDetailsIsVisible() {
+    const postDetails = this.informationTab.locator(
+      ".tab-content",
     );
     await postDetails.waitFor();
     await expect(postDetails).toBeVisible();
+  }
+
+  async closeInformationTab() {
+    const closebutton = this.informationTab.locator(
+      ".close-modal-btn img",
+    );
+    await closebutton.click();
   }
 
   async goToRecentlyReviewedPage() {
@@ -100,13 +97,15 @@ export default class TAIPage extends BasePage {
     return false;
   }
 
-  async clickOnHeartButton(newPage) {
-    const postDetails = newPage.locator(
-      "//div[contains(@class,'package-right')]",
+  async clickOnHeartButton() {
+    const postDetails = this.informationTab.locator(
+      ".tab-content",
     );
     await postDetails.waitFor();
-    await newPage.locator(".heart-btn img").click();
-    await newPage.waitForTimeout(1000);
+    await this.page.waitForTimeout(1200);
+    const heartButton = await postDetails.locator(".heart-btn img");
+    await heartButton.click();
+    await this.page.waitForTimeout(1200);
  }   
 
  async goToSavedPostsPage() {
@@ -128,10 +127,11 @@ export default class TAIPage extends BasePage {
     return await this.pagination.nth(totalCount - 2).textContent();
   }
 
-  async chooseRentalType() {
-    await this.select_option.first().click();
-    await expect(this.rentalOnly_option).toBeVisible();
-    await this.rentalOnly_option.click();
+  async chooseCountryFilter() {
+    await this.country_filter.first().click();
+    await this.country_filter.first().locator("//input").fill("India");
+    await expect(this.india_option).toBeVisible();
+    await this.india_option.click();
   }
 
   async getUpdatedPageNumber() {
@@ -145,28 +145,16 @@ export default class TAIPage extends BasePage {
     return newText?.trim();
   }
 
+  async enterCityName(city) {
+    await this.city_input.fill(city);
+    await this.page.waitForTimeout(2000);
+  }
+
   async chooseIndustryFilter() {
     await this.industry_filter.first().click();
     await expect(this.bussiness_option).toBeVisible();
     await this.bussiness_option.click();
   }
 
-  async chooseCategoryFilter() {
-    await this.category_filter.first().click();
-    await expect(this.mc_option).toBeVisible();
-    await this.mc_option.click();
-  }
-
-  async chooseSubCategoryFilter() {
-    await this.subcategory_filter.first().click();
-    await expect(this.sc_option).toBeVisible();
-    await this.sc_option.click();
-  }
-
-  async verifySuccessMessageIsDisplayed(text, newPage) {
-    await expect(newPage.locator(".custom-popup.alert.alert-success")).toBeVisible();
-    const message = await newPage.locator(".custom-popup.alert.alert-success").textContent();
-    expect(message).toContain(text);
-  }
 
 }

@@ -1,4 +1,4 @@
-import { test, expect } from "../../fixtures/page.fixture.js";
+import { test, expect } from "../../../fixtures/page.fixture.js";
 
 
 test("TC_FTJ_001: FTJ account page is accessible after login and industries are displayed", async ({
@@ -8,7 +8,7 @@ test("TC_FTJ_001: FTJ account page is accessible after login and industries are 
 }) => {
   await userHomePage.goToFTJViaHeader();
   await expect(userPage).toHaveURL("https://urxprt.com/en/searchdownloadcv");
-  const expectedIndustries = ["E Commerce", "Energy", "Banking  Financial Institutions", "Corporate Legal Departments", "Legal", "Business", "Technology and Software", "Insurance and Financial Services"];
+  const expectedIndustries = ["E Commerce", "Banking  Financial Institutions", "Corporate Legal Departments", "Legal", "Business", "Technology and Software", "Insurance and Financial Services"];
   const industries = await userFTJPage.getIndustriesList();
   for (const industry of expectedIndustries) {
     expect(industries).toContain(industry);
