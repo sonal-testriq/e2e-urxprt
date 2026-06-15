@@ -26,7 +26,7 @@ async function globalSetup() {
     await page.goto(baseUrl);
     await page
       .getByText(
-        "Connect With Top Experts or Find Exciting Post & Browse Projects (PBP)Upgrade",
+        "Connect With Top Experts or Find Exciting Post & Browse Projects (PBP)",
       )
       .click();
     await page.getByRole("button", { name: "Sign in" }).click();
