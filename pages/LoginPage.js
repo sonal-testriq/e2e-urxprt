@@ -12,7 +12,8 @@ export default class LoginPage extends BasePage {
     this.passwordField = page.getByRole("textbox", { name: "Password *" });
     this.mobileLoginLink = page.locator("//a[contains(text(), 'Login with mobile number')]");
     this.mobileNumberField = page.locator("input[placeholder='Enter mobile number']");
-    this.createAccountButton = page.locator(".create-account");
+    this.submitViaWhatsapp = page.getByRole('button', { name: 'Verify via WhatsApp' });
+    this.submitViaSMS = page.getByRole('button', { name: 'Verify via SMS' });
     this.verifyAndLoginButton = page.getByRole("button", { name: "Verify & Login" });
     this.signupButton = page.getByRole("button", { name: "Sign Up" });
     this.loginErrorPopup = page.locator(".custom-popup.alert.alert-danger");
@@ -65,6 +66,16 @@ export default class LoginPage extends BasePage {
     await this.createAccountButton.click();
   }
 
+  async submitViaMobileSMS(mobileNumber) {
+    await this.mobileNumberField.fill(mobileNumber);
+    await this.submitViaSMS.click();
+  }
+
+  async submitViaMobileWhatsApp(mobileNumber) {
+    await this.mobileNumberField.fill(mobileNumber);
+    await this.submitViaWhatsapp.click();
+  }
+
   async verifyOtp(otpDigits) {
     const otpInputs = this.page.locator(".otp-container div input");
     for (let i = 0; i < otpDigits.length; i++) {
@@ -74,7 +85,7 @@ export default class LoginPage extends BasePage {
   }
 
   async clickCreateAccount() {
-    await this.createAccountButton.click();
+    await this.submitViaSMS.click();
   }
 
   async fillRegistrationField(fieldName, value) {

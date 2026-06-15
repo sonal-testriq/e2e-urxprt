@@ -9,7 +9,7 @@ export const test = base.extend({
   // Authenticated context for a regular user
   userContext: async ({ browser }, use) => {
     const context = await browser.newContext({
-      storageState: "./tests/.auth/user.json",
+      storageState: ".auth/user.json",
     });
     await use(context);
     await context.close();
@@ -18,7 +18,7 @@ export const test = base.extend({
   // Authenticated context for an expert
   expertContext: async ({ browser }, use) => {
     const context = await browser.newContext({
-      storageState: "./tests/.auth/expert.json",
+      storageState: ".auth/expert.json",
     });
     await use(context);
     await context.close();
