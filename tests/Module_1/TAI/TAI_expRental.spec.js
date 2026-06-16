@@ -9,7 +9,6 @@ import { pageRoutes, TAIProductName } from "../../../testData/constants.js";
 import { BasePage } from "../../../pages/base_page.js";
 import { setEngine } from "node:crypto";
 
-
 test.describe.serial("TAI Flow", () => {
   test("TC_001: Adding a product by user at TAI", async ({
     userPage,
@@ -177,5 +176,4 @@ test.describe.serial("TAI Flow", () => {
     await userTAIPage.openCompletedTAIReceivedOrders();
     await userTAIPage.verifyCompletedTAIProduct(TAIProductName);
   });
-  
 });

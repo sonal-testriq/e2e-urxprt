@@ -40,12 +40,14 @@ export const test = authTest.extend({
   userTAIPage: async ({ userPage }, use) => {
     await use(new TAIPage(userPage));
   },
+
   expertBSMPage: async ({ expertPage }, use) => {
     await use(new BSMPage(expertPage));
   },
   expertTAIPage: async ({ expertPage }, use) => {
     await use(new TAIPage(expertPage));
   },
+  
   companyBSMPage: async ({ companyPage }, use) => {
     await use(new BSMPage(companyPage));
   },
