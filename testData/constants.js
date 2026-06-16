@@ -34,9 +34,9 @@ export const authData = {
 const getRandomNumber = () => Math.floor(Math.random() * 1000) + 1;
 export const PTJPostName = "Temp V2 Post Automation" + " " + getRandomNumber();
 export const TAIProductName = "Temp TAI post" + " " +getRandomNumber();
-export const BSMProductName = "Temp BSM post 111";
+export const BSMProductName = "Temp BSM post" + " " +getRandomNumber();
 export const PBPPostName = "PBP Post Automation" + " " + getRandomNumber();
 export const WBOPostName = "WBO Post Automation" + " " + getRandomNumber();
 export const PTJPost_Name = "PTJ Post Automation" + " " + getRandomNumber();
-export const OTS_ServiceName = "OTS Service Post 723";
+export const OTS_ServiceName = "OTS Service Post" + " " + getRandomNumber();
 export const BSA_ProductName = "BSA Post Automation" + " " + getRandomNumber();

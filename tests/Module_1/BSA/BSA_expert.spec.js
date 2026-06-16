@@ -14,17 +14,15 @@ test("TC_BSA_001: BSA page is accessible after login", async ({
 test("TC_BSA_002: Search filters return expected results", async ({
   expertPage,
   expertHomePage,
+  expertBSAPage
 }) => {
   await expertHomePage.gotoBSAViaCard();
   const randomText = "test";
-  const search_box = expertPage.getByRole("textbox", { name: "Search BSA" });
-  const search_button = expertPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
-  const postNames = await expertPage.locator("//div[@class='auction-det']//h6").first();
-  await postNames.first().waitFor();
-  await expertPage.waitForTimeout(1200);
-  const count = await postNames.count();
+  await expertBSAPage.searchFor(randomText);
+  const post_names = await expertBSAPage.postNames.first();
+  await post_names.first().waitFor();
+  await expertPage.waitForTimeout(500);
+  const count = await post_names.count();
   expect(count).toBeGreaterThanOrEqual(1);
 });
 

@@ -21,7 +21,7 @@ export default class BSAPage extends BasePage {
     this.next_button = page.locator("//button[.='Next']");
     this.add_currectDateTimeButton = page.locator("//button[.='Add Current Days Time']");
     this.save_and_publish = page.locator("//button[.='Save and Publish']");
-    this.add_and_publish = page.locator("//button[.='Add and Publish']");
+    this.add_and_publish = page.locator("//button[.='Update and Publish']");
     this.success_message = page.locator(".custom-popup.alert.alert-success");
     this.failure_message = page.locator(".custom-popup.alert.alert-danger");
     this.product_names = page.locator(".auction-det h4");
