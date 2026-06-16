@@ -4,6 +4,13 @@ import { BasePage } from "./base_page";
 export default class MASPage extends BasePage {
   constructor(page) {
     super(page);
+    this.companyNames = page.locator("//div[@class='packaged-img']//h3");
+    this.search_box = page.getByRole("textbox", { name: "Search MAS" });
+    this.search_button = page.getByRole("button", { name: "Search" });
+    this.addCompany_button = page.locator(
+      "//button[contains(text(),'Add Company')]",
+    );
+
     this.postNames = page.locator("//div[@class='packaged-img']//h3");
     this.search_box = page.getByRole("textbox", { name: "Search MAS" });
     this.search_button = page.getByRole("button", { name: "Search" });
@@ -16,19 +23,25 @@ export default class MASPage extends BasePage {
     this.recently_viewed_tab = page.locator(
       "//a[contains(text(),'Recently viewed')]",
     );
-    this.saved_posts_tab = page.locator("//a[contains(text(),'Saved Companies')]");
+    this.saved_posts_tab = page.locator(
+      "//a[contains(text(),'Saved Companies')]",
+    );
     this.post_not_found = page.locator("//div[@class='content-loader']");
     this.pagination = page.locator("//ul[@class='pagination']/li/a");
     this.country_filter = page.locator(
       "//div[contains(text(),'Search Country')]/parent::div/parent::div",
     );
-    this.india_option = page.getByRole("option", { name: "India" , exact: true });
+    this.india_option = page.getByRole("option", {
+      name: "India",
+      exact: true,
+    });
     this.city_input = page.locator("//input[@placeholder='Search here']");
     this.industry_filter = page.locator(
       "//div[contains(text(),'Search Here')]/parent::div/parent::div",
     );
     this.bussiness_option = page.getByRole("option", { name: "Business" });
   }
+
   async addACompany() {
     await this.addACompany_button.click();
   }
@@ -40,7 +53,7 @@ export default class MASPage extends BasePage {
   async waitForPosts() {
     await this.postNames.first().waitFor();
   }
-  
+
   async searchFor(text) {
     await this.search_box.fill(text);
     await this.search_button.click();
@@ -58,17 +71,13 @@ export default class MASPage extends BasePage {
   }
 
   async verifyPostDetailsIsVisible() {
-    const postDetails = this.informationTab.locator(
-      ".tab-content",
-    );
+    const postDetails = this.informationTab.locator(".tab-content");
     await postDetails.waitFor();
     await expect(postDetails).toBeVisible();
   }
 
   async closeInformationTab() {
-    const closebutton = this.informationTab.locator(
-      ".close-modal-btn img",
-    );
+    const closebutton = this.informationTab.locator(".close-modal-btn img");
     await closebutton.click();
   }
 
@@ -98,17 +107,15 @@ export default class MASPage extends BasePage {
   }
 
   async clickOnHeartButton() {
-    const postDetails = this.informationTab.locator(
-      ".tab-content",
-    );
+    const postDetails = this.informationTab.locator(".tab-content");
     await postDetails.waitFor();
     await this.page.waitForTimeout(1200);
     const heartButton = await postDetails.locator(".heart-btn img");
     await heartButton.click();
     await this.page.waitForTimeout(1200);
- }   
+  }
 
- async goToSavedPostsPage() {
+  async goToSavedPostsPage() {
     await this.saved_posts_tab.click();
   }
 
@@ -155,6 +162,4 @@ export default class MASPage extends BasePage {
     await expect(this.bussiness_option).toBeVisible();
     await this.bussiness_option.click();
   }
-
-
 }

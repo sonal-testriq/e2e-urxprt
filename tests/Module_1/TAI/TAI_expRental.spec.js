@@ -139,7 +139,7 @@ test.describe.serial("TAI Flow", () => {
     expertHomePage,
     expertTAIPage,
   }) => {
-    const currentDate = new Date().toISOString().split('T')[0];
+    const currentDate = new Date().toISOString().split("T")[0];
     await expertHomePage.gotoTAIViaCard();
     const TAIPostCard = expertPage.locator("div.packaged-img").filter({
       has: expertPage.locator("h6", { hasText: TAIProductName }),
@@ -235,7 +235,10 @@ test.describe.serial("TAI Flow", () => {
     });
     await acceptTermsButton.click();
     await newPage.waitForTimeout(1000);
-    await expertTAIPage.verifySuccessMessageIsDisplayed("TAI request has been sent", newPage)
+    await expertTAIPage.verifySuccessMessageIsDisplayed(
+      "TAI request has been sent",
+      newPage,
+    );
     // expect(newPage.getByText("TAI Request Has Been Sent")).toBeVisible();
     // expect(expert);
     // expect(
@@ -591,5 +594,4 @@ test.describe.serial("TAI Flow", () => {
     // Then assert only the h5 within that row
     await expect(postRow.locator("h5").first()).toHaveText(TAIProductName);
   });
-  
 });
