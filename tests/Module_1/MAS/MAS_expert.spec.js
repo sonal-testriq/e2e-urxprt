@@ -14,17 +14,15 @@ test("TC_MAS_001: MSA page is accessible after login", async ({
 test("TC_MAS_002: Search filters return expected results", async ({
   expertPage,
   expertHomePage,
+  expertMASPage
 }) => {
   await expertHomePage.gotoMASViaCard();
   const randomText = "ABC Company";
-  const search_box = expertPage.getByRole("textbox", { name: "Search MAS" });
-  const search_button = expertPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
-  const postNames = await expertPage.locator("//div[@class='packaged-img']//h3");
-  await postNames.first().waitFor();
-  await expertPage.waitForTimeout(1200);
-  const count = await postNames.count();
+  await expertMASPage.searchFor(randomText);
+  const post_names = await expertMASPage.postNames;
+  await post_names.first().waitFor();
+  await expertPage.waitForTimeout(500);
+  const count = await post_names.count();
   expect(count).toBeGreaterThanOrEqual(1);
 });
 

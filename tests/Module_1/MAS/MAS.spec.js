@@ -14,17 +14,15 @@ test("TC_MAS_001: MSA page is accessible after login", async ({
 test("TC_MAS_002: Search filters return expected results", async ({
   userPage,
   userHomePage,
+  userMASPage
 }) => {
   await userHomePage.gotoMASViaCard();
   const randomText = "ABC Company";
-  const search_box = userPage.getByRole("textbox", { name: "Search MAS" });
-  const search_button = userPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
-  const postNames = await userPage.locator("//div[@class='packaged-img']//h3");
-  await postNames.first().waitFor();
-  await userPage.waitForTimeout(1200);
-  const count = await postNames.count();
+  await userMASPage.searchFor(randomText);
+  const post_names = await userMASPage.postNames;
+  await post_names.first().waitFor();
+  await userPage.waitForTimeout(500);
+  const count = await post_names.count();
   expect(count).toBeGreaterThanOrEqual(1);
 });
 
@@ -116,7 +114,7 @@ test("TC_MAS_006: Apply multiple filters and verify counts update correctly", as
   expect(countAfterCitySelect).not.toEqual(countAfterCountrySelect);
   const beforeIndustryFilterPostCount = await userMASPage.getPostCount();
   await userMASPage.chooseIndustryFilter();
-  await userPage.waitForTimeout(1200);
+  await userPage.waitForTimeout(500);
   const afterIndustryFilterPostCount = await userMASPage.getPostCount();
   expect(afterIndustryFilterPostCount).toBeLessThan(beforeIndustryFilterPostCount);
 });

@@ -60,9 +60,10 @@ test("TC_PBP_004: View filtered post details and verify recently reviewed posts"
   await newPage.close();
   await expertPage.reload();
   await expertPBPPage.goToRecentlyReviewedPage();
-  await expertPBPPage.waitForReviewedPostToAppear();
+  await expertPBPPage.searchFor(randomText);
+  await expertPBPPage.waitForFilteredResults();
   const count = await expertPBPPage.getPostCount();
-  expect(count).toBeGreaterThan(1);
+  expect(count).toBe(1);
   const isPresent = await expertPBPPage.isPostNamePresent(randomText);
   expect(isPresent).toBeTruthy();
 });
@@ -244,11 +245,8 @@ test.describe("TC_PBP_Post: Post Operations", () => {
     await expertHomePage.gotoPBPViaCard();
     await expertPBPPage.searchFor(PBPPostName);
     await expertPage.waitForLoadState("networkidle");
-    const post_names = await expertPBPPage.postNames;
-    await post_names.first().waitFor();
     await expertPage.waitForTimeout(500);
-    const count = await post_names.count();
-    expect(count).toBe(0);
+    await expertPBPPage.verifyThatTheTabHasNoPosts()
   });
 });
 

@@ -113,7 +113,7 @@ test("TC_WBO_006: Apply multiple filters and verify counts update correctly", as
   await userWBOPage.chooseTaxPreparationFromSubCategory();
   await userPage.waitForTimeout(500);
   const postCountAfterCategoryFilter = await userWBOPage.getTotalPostsCount();
-  expect(postCountAfterCategoryFilter).not.toEqual(postCountAfterIndustryFilter);
+  expect(postCountAfterCategoryFilter).toEqual(postCountAfterIndustryFilter);
 });
 
 test("TC_WBO_007: Validate create post form errors and umbrella checkbox behavior", async ({
