@@ -1,6 +1,6 @@
 import { test, expect } from "../../../fixtures/page.fixture.js";
 
-test.only("TC_BSM_001: BSM page is accessible after login", async ({
+test("TC_BSM_001: BSM page is accessible after login", async ({
   userPage,
   userHomePage,
 }) => {

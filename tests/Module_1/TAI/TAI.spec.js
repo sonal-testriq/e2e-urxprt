@@ -1,6 +1,6 @@
 import { test, expect } from "../../../fixtures/page.fixture.js";
 
-test.only("TC_TAI_001: TAI page is accessible after login", async ({
+test("TC_TAI_001: TAI page is accessible after login", async ({
   userPage,
   userHomePage
 }) => {

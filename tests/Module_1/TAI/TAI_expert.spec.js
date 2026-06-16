@@ -14,17 +14,15 @@ test("TC_TAI_001: TAI page is accessible after login", async ({
 test("TC_TAI_002: Search filters return expected results", async ({
   expertPage,
   expertHomePage,
+  expertTAIPage
 }) => {
   await expertHomePage.gotoTAIViaCard();
   const randomText = "Wallpaper";
-  const search_box = expertPage.getByRole("textbox", { name: "Search TAI" });
-  const search_button = expertPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
-  const postNames = await expertPage.locator("//div[@class='packaged-img']//h6");
-  await postNames.first().waitFor();
+  await expertTAIPage.searchFor(randomText);
+  const post_names = await expertTAIPage.postNames;
+  await post_names.first().waitFor();
   await expertPage.waitForTimeout(1200);
-  const count = await postNames.count();
+  const count = await post_names.count();
   expect(count).toBeGreaterThanOrEqual(1);
 });
 

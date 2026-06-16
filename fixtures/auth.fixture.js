@@ -27,7 +27,7 @@ export const test = base.extend({
   // Authenticated context for a company
   companyContext: async ({ browser }, use) => {
     const context = await browser.newContext({
-      storageState: "./tests/.auth/company.json",
+      storageState: ".auth/company.json",
     });
     await use(context);
     await context.close();

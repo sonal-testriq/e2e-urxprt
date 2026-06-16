@@ -5,19 +5,15 @@ import { describe } from "node:test";
 import credentials from "../../testData/credentials.json";
 import fs from "fs";
 import path from "path";
-import {
-  pageRoutes,
-  BSMProductName,
-  MASPostName,
-} from "../../testData/constants.js";
-
+import { pageRoutes, BSMProductName, MASPostName } from "../../testData/constants.js";
 import { BasePage } from "../../pages/base_page.js";
 import { setEngine } from "node:crypto";
+
 test.describe.serial("MAS Flow", () => {
   test("Adding a company by user at MAS", async ({
     userPage,
     userHomePage,
-    userMASPage,
+    userMASPage
   }) => {
     await userPage.goto(pageRoutes.account);
     const masCard = userPage.locator(".it-dev", {

@@ -2,7 +2,7 @@ import { test, expect } from "../../../fixtures/page.fixture.js";
 
 test("TC_BSA_001: BSA page is accessible after login", async ({
   companyPage,
-  companyHomePage,
+  companyHomePage
 }) => {
   await companyHomePage.gotoBSAViaCard();
   await expect(companyPage).toHaveURL("https://urxprt.com/en/searchauction");
@@ -14,17 +14,15 @@ test("TC_BSA_001: BSA page is accessible after login", async ({
 test("TC_BSA_002: Search filters return expected results", async ({
   companyPage,
   companyHomePage,
+  companyBSAPage
 }) => {
   await companyHomePage.gotoBSAViaCard();
   const randomText = "test";
-  const search_box = companyPage.getByRole("textbox", { name: "Search BSA" });
-  const search_button = companyPage.getByRole("button", { name: "Search" });
-  await search_box.fill(randomText);
-  await search_button.click();
-  const postNames = await companyPage.locator("//div[@class='auction-det']//h6").first();
-  await postNames.first().waitFor();
-  await companyPage.waitForTimeout(1200);
-  const count = await postNames.count();
+  await companyBSAPage.searchFor(randomText);
+  const post_names = await companyBSAPage.postNames;
+  await post_names.first().waitFor();
+  await companyPage.waitForTimeout(500);
+  const count = await post_names.count();
   expect(count).toBeGreaterThanOrEqual(1);
 });
 
@@ -70,7 +68,7 @@ test("TC_BSA_004: View filtered post details and verify recently reviewed posts"
 test("TC_BSA_005: Save a filtered post and verify saved posts page", async ({
   companyPage,
   companyHomePage,
-  companyBSAPage,
+  companyBSAPage
 }) => {
   await companyHomePage.gotoBSAViaCard();
   await companyBSAPage.waitForPosts();
