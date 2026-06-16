@@ -352,7 +352,7 @@ export default class PBPPage extends BasePage {
   }
 
   async cancelCreatedPBPPost() {
-    await this.cancel_button.click();
+    await this.cancel_button.first().click();
     await expect(this.confirm_cancellation_popup).toBeVisible();
     await this.confirm_cancellation_button.click();
   }

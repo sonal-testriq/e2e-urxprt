@@ -162,4 +162,110 @@ export default class MASPage extends BasePage {
     await expect(this.bussiness_option).toBeVisible();
     await this.bussiness_option.click();
   }
+
+  async clickAddCompanyPlan() {
+    const addBtn = this.page.locator('.packaged-first button:has-text("Add")');
+    await addBtn.click();
+    await expect(this.page.locator(".modal-overlay-sec.active")).toBeVisible();
+  }
+
+  async createMASCompany(companyName) {
+    await this.fillInputWithPlaceholder("Company Name", companyName);
+    await this.page.locator(".dropzone").first().locator('input[type="file"]').setInputFiles("testData/sampleCompanyImg.jpg");
+    await expect(this.page.locator("//img[@alt='Delete']")).toBeVisible();
+    await this.selectDropdown("Company Industry *", "Business");
+    await this.fillInputWithPlaceholder("Enter URL", "https://www.testcompany.com");
+    await this.fillInputWithPlaceholder("Enter address", "Maharashtra");
+    await this.fillInputWithPlaceholder("Enter pincode", "400001");
+    await this.fillInputWithPlaceholder("Enter city", "Mumbai");
+    await this.selectDropdown("Country *", "India");
+    await this.fillRichTextEditor("Description", "This is a test company for automation testing.");
+    await this.page.locator(".dropzone").last().locator('input[type="file"]').setInputFiles("testData/companyProfile.pdf");
+    await expect(this.page.locator("//img[@alt='Delete']").nth(1)).toBeVisible();
+  } 
+
+  async publishCompany() {
+    await this.page.getByRole("button", { name: "Add Company and Publish", exact: true }).click();
+    await this.page.waitForLoadState("networkidle");
+    const popup = this.page.locator(".contract-popup-content");
+    await popup.scrollIntoViewIfNeeded();
+    await popup.getByRole("button", { name: "I Agree & Submit", exact: true }).click();
+  }
+
+  async verifyMASCreated() {
+    await expect(this.page.getByText("MAS Service Created Successfully")).toBeVisible();
+  }
+
+  async verifyMASPostVisible(companyName) {
+    const MASPostCard = this.page.locator("div.packaged-img h3", { hasText: companyName, exact: false });
+    await expect(MASPostCard).toHaveText(companyName);
+  }
+
+  async verifyYourPostTag() {
+    const yourPostTag = this.page.locator("div.post-sold p.your-postbtn", { hasText: "Your post" });
+    await expect(yourPostTag.first()).toBeVisible();
+  }
+
+  async verifyCompanyListed(companyName) {
+    const MASPostCard = this.page.locator("div.packaged-img h3", { hasText: companyName, exact: false });
+    await expect(MASPostCard).toHaveText(companyName);
+  }
+
+  async openMASCompany(companyName) {
+    const companyCard = this.page.locator(".packaged-img").filter({ hasText: companyName });
+    await companyCard.getByRole("button", { name: "View more" }).click();
+    await expect(this.page.locator(".modal-overlay-sec.active")).toBeVisible();
+  }
+
+  async clickInterestedButton() {
+    await this.page.getByRole("button", { name: "I'm Interested" }).click();
+    await expect(this.page).toHaveURL(/.*\/mergersacquisitionscontract\//);
+  }
+
+  async acceptMASContract() {
+    await this.page.locator("label[for='agree']").click();
+    await this.page.locator(".popup-contract-container").locator("button", {
+        name: "Scroll to Bottom",
+        exact: true,
+      }).click();
+    await this.page.locator(".popup-contract-container").locator("input[id='agree']").click();
+    await this.page.waitForLoadState("networkidle");
+    await this.page.locator("button", { hasText: "Apply" }).click();
+  }
+
+  async verifyInterestSubmitted() {
+    await expect(this.page.getByText("Your Interest Has Been Submitted")).toBeVisible();
+  }
+
+  async openNotification(notificationText) {
+    const notificationItem = this.page.locator(`//h6[normalize-space()='${notificationText}']`).first();
+    await expect(notificationItem).toBeVisible();
+    await notificationItem.click();
+  }
+
+  async verifyReceivedOrdersPage() {
+    await expect(this.page).toHaveURL("https://urxprt.com/en/dashboard/receivedorders");
+  }
+
+  async openActiveMASOrders() {
+    await this.page.locator(".nav-tabs a", { hasText: "Active orders", exact: false }).click();
+    const MASOrders = this.page.locator("#Activeorders .order-tabs a",
+      {
+        hasText: "Merger & Acquisition Services (MAS)",
+        exact: false,
+      }
+    );
+    await MASOrders.click();
+  }
+
+  async openMASRequests(companyName) {
+    await this.page.locator(".packaged-img").filter({ hasText: companyName }).getByRole("button", { name: "View requests" }).click();
+    await expect(this.page.locator(".modal-overlay-sec.active")).toBeVisible();
+  }
+
+  async verifyInterestedCompany(expertName) {
+    const companyName = this.page.locator(".professional-left h6");
+    await expect(companyName).toHaveText(expertName);
+  }
+
 }

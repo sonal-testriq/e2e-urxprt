@@ -279,7 +279,7 @@ export default class PTJPage extends BasePage {
   }
 
   async cancelCreatedPBPPost() {
-    await this.cancel_button.click();
+    await this.cancel_button.first().click();
     await expect(this.confirm_cancellation_popup).toBeVisible();
     await this.confirm_cancellation_button.click();
   }
@@ -350,12 +350,6 @@ export default class PTJPage extends BasePage {
 
   async clickOnSaveNButton() {
     await this.save_button.click();
-  }
-
-  async cancelCreatedPBPPost() {
-    await this.cancel_button.click();
-    await expect(this.confirm_cancellation_popup).toBeVisible();
-    await this.confirm_cancellation_button.click();
   }
 
   async openPost(postName) {

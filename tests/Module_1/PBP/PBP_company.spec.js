@@ -60,9 +60,10 @@ test("TC_PBP_004: View filtered post details and verify recently reviewed posts"
   await newPage.close();
   await companyPage.reload();
   await companyPBPPage.goToRecentlyReviewedPage();
-  await companyPBPPage.waitForReviewedPostToAppear();
+  await companyPBPPage.searchFor(randomText);
+  await companyPBPPage.waitForFilteredResults();
   const count = await companyPBPPage.getPostCount();
-  expect(count).toBeGreaterThan(1);
+  expect(count).toBe(1);
   const isPresent = await companyPBPPage.isPostNamePresent(randomText);
   expect(isPresent).toBeTruthy();
 });

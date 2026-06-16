@@ -40,4 +40,4 @@ export const WBOPostName = "WBO Post Automation" + " " + getRandomNumber();
 export const PTJPost_Name = "PTJ Post Automation" + " " + getRandomNumber();
 export const OTS_ServiceName = "OTS Service Post" + " " + getRandomNumber();
 export const BSA_ProductName = "BSA Post Automation" + " " + getRandomNumber();
-export const MASPostName = "MAS Post Automation" + getRandomNumber();
+export const MASPostName = "MAS Post Automation" + " " + getRandomNumber();
